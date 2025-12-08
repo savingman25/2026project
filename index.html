@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 성과급 프로젝트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.2s; }
+        
+        /* 완료 스타일 */
+        .month-card.done { border: 2px solid #3b82f6; background-color: #eff6ff; }
+        .month-card.done .input-group input { background-color: #ffffff; color: #3b82f6; font-weight: bold; }
+        
+        /* 커스텀 스크롤바 */
+        .custom-scroll::-webkit-scrollbar { height: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; margin: 0 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        input[type="number"] { width: 100%; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; text-align: right; font-size: 0.95rem; transition: all 0.2s; }
+        input[type="number"]:focus { outline: none; border-color: #3b82f6; ring: 2px; }
+        
+        .income-input { border-color: #bfdbfe; background-color: #eff6ff; }
+        .income-input:focus { border-color: #2563eb; background-color: #fff; }
+    </style>
+</head>
+<body class="text-gray-800 pb-20">
+
+    <!-- 상단 네비게이션 -->
+    <nav class="bg-blue-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <h1 class="text-xl font-bold">🚀 2026 성과급 프로젝트</h1>
+                <span class="text-xs bg-blue-500 px-2 py-1 rounded font-mono">Ver 6.0 (Final)</span>
+            </div>
+            <div class="text-right text-xs opacity-90">
+                <p>목표: 경제적 자유</p>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 space-y-6">
+
+        <!-- 1. 메인 스코어보드 (2단 분리) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- 왼쪽: 확정 자산 -->
+            <div class="card bg-gradient-to-br from-blue-700 to-blue-500 text-white border-none shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-blue-100 text-sm font-medium">💰 현재까지 확정된 자산</p>
+                    <span class="text-xs bg-blue-800 bg-opacity-30 px-2 py-1 rounded">Net Worth</span>
+                </div>
+                <h2 class="text-3xl font-bold tracking-tight" id="totalAsset">0원</h2>
+                
+                <div class="mt-4">
+                    <div class="flex justify-between text-xs text-blue-100 mb-1">
+                        <span>목표 달성률</span>
+                        <span id="progress-text" class="font-bold">0%</span>
+                    </div>
+                    <div class="w-full bg-blue-900 bg-opacity-30 h-1.5 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 총 수입 (NEW) -->
+            <div class="card bg-gradient-to-br from-emerald-600 to-emerald-400 text-white border-none shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                
+                <div class="flex justify-between items-start mb-2">
+                    <p class="text-emerald-100 text-sm font-medium">💵 프로젝트 기간 총 수입</p>
+                    <span class="text-xs bg-emerald-800 bg-opacity-30 px-2 py-1 rounded">Income</span>
+                </div>
+                <h2 class="text-3xl font-bold tracking-tight" id="totalIncomeDisplay">0원</h2>
+                
+                <div class="mt-4 flex items-center text-xs text-emerald-100 opacity-90">
+                    <span class="mr-1">ℹ️</span>
+                    <span>월급과 모든 수당이 합산된 금액입니다.</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 메인 컨텐츠 그리드 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- [좌측] 7칸: 투자 & 수입 기록 -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <h3 class="text-lg font-bold flex items-center">
+                        📅 월별 기록장
+                        <span id="current-month-display" class="ml-2 text-blue-600 text-base"></span>
+                    </h3>
+                </div>
+
+                <!-- 월 선택 네비게이션 -->
+                <div class="bg-gray-100 p-2 rounded-xl shadow-inner">
+                    <div id="month-nav" class="flex space-x-2 overflow-x-auto custom-scroll pb-2 select-none"></div>
+                </div>
+
+                <!-- 1. 투자 실행 카드 -->
+                <div id="monthly-container"></div>
+                
+                <!-- 2. 수입 기록 카드 -->
+                <div id="income-container"></div>
+
+                <!-- 메모장 -->
+                <div class="card mt-4">
+                    <h3 class="text-sm font-bold mb-2 text-gray-500">📝 투자 메모</h3>
+                    <textarea id="memoArea" class="w-full h-20 border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="자유롭게 메모하세요. (자동 저장)"></textarea>
+                </div>
+            </div>
+
+            <!-- [우측] 5칸: 차트 & 지출 -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- 포트폴리오 차트 -->
+                <div class="card">
+                    <h3 class="text-lg font-bold mb-4 border-b pb-2">📊 자산 포트폴리오</h3>
+                    <div class="h-64 flex justify-center items-center">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-gray-400 mt-2">* 완료 체크된 금액만 반영됩니다.</p>
+                </div>
+
+                <!-- 생활비 트래커 -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4 border-b pb-2">
+                        <h3 class="text-lg font-bold">🛒 생활비 지출</h3>
+                        <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">예산: 15~20만</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-gray-50 p-2 rounded text-center">
+                            <p class="text-xs text-gray-500">총 지출</p>
+                            <p class="font-bold text-gray-700" id="totalExpense">0원</p>
+                        </div>
+                        <div class="bg-gray-50 p-2 rounded text-center">
+                            <p class="text-xs text-gray-500">월 평균</p>
+                            <p class="font-bold text-gray-700" id="avgExpense">0원</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scroll" id="expense-container"></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 설정 데이터 ---
+        const months = [
+            "26.04", "26.05", "26.06", "26.07", "26.08", "26.09",
+            "26.10", "26.11", "26.12", "27.01", "27.02", "27.03"
+        ];
+        const defaultPlan = { snp: 130, nasdaq: 20, gold: 10, house: 25, irp: 10, savings: 5 };
+        const fieldConfig = [
+            { key: 'snp', label: '🇺🇸 S&P500', color: '#3b82f6' },
+            { key: 'nasdaq', label: '💻 나스닥', color: '#8b5cf6' },
+            { key: 'gold', label: '🥇 금 현물', color: '#eab308' },
+            { key: 'house', label: '🏠 주택청약', color: '#10b981' },
+            { key: 'irp', label: '🛡️ IRP', color: '#6366f1' },
+            { key: 'savings', label: '🐷 적금', color: '#9ca3af' }
+        ];
+
+        let myChart = null; 
+
+        window.onload = function() { initApp(); };
+
+        function initApp() {
+            initializeData();
+            
+            renderMonthNav();
+            renderInvestmentCards();
+            renderIncomeCards();
+            renderExpenseTracker();
+
+            loadInvestmentData();
+            loadIncomeData();
+            loadExpenseData();
+            
+            calculateTotalAndChart(); // 자산 계산
+            calculateTotalIncome();   // 수입 계산 (NEW)
+
+            selectMonth(months[0]);
+        }
+
+        // --- 초기화 ---
+        function initializeData() {
+            if (!localStorage.getItem('project2026_data_v6')) {
+                const initialData = {};
+                months.forEach(m => initialData[m] = { ...defaultPlan });
+                localStorage.setItem('project2026_data_v6', JSON.stringify(initialData));
+            }
+        }
+
+        // --- 렌더링 함수들 ---
+        function renderMonthNav() {
+            document.getElementById('month-nav').innerHTML = months.map(m => `
+                <button onclick="selectMonth('${m}')" id="btn-${m}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all border border-gray-200 bg-white text-gray-500 whitespace-nowrap">${m}</button>
+            `).join('');
+        }
+
+        function renderInvestmentCards() {
+            document.getElementById('monthly-container').innerHTML = months.map(month => {
+                const inputs = fieldConfig.map(f => `
+                    <div class="flex items-center justify-between mb-2 input-group">
+                        <label class="text-gray-600 text-sm w-1/2">${f.label}</label>
+                        <div class="w-1/2"><input type="number" data-month="${month}" data-key="${f.key}" oninput="saveAndCalc()" class="bg-gray-50"></div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="card month-card hidden" id="card-${month}">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-gray-500">STEP 1</span>
+                                <h4 class="text-xl font-bold text-gray-800">투자 실행</h4>
+                            </div>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200">
+                                <input type="checkbox" id="check-${month}" onchange="toggleDone('${month}')" class="w-4 h-4 text-blue-600 rounded">
+                                <span class="text-sm font-bold text-gray-600">완료</span>
+                            </label>
+                        </div>
+                        <div class="space-y-1">${inputs}</div>
+                        <div class="mt-4 pt-2 border-t flex justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500">투자 합계</span>
+                            <span class="font-bold text-blue-600" id="sum-${month}">0만원</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderIncomeCards() {
+            document.getElementById('income-container').innerHTML = months.map(month => `
+                <div class="card hidden border-l-4 border-blue-400" id="income-${month}">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-gray-500">STEP 2</span>
+                            <h4 class="text-lg font-bold text-gray-800">월급 & 수당 기록</h4>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">💰 월급(본봉)</label>
+                            <input type="number" id="salary-${month}" placeholder="0" oninput="saveIncome()" class="income-input">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">🎁 수당(성과급/명절/정근)</label>
+                            <input type="number" id="bonus-${month}" placeholder="0" oninput="saveIncome()" class="income-input">
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-blue-100 flex justify-between items-center">
+                        <span class="text-xs font-bold text-gray-500">총 수입</span>
+                        <span class="font-bold text-gray-700" id="income-total-${month}">0만원</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderExpenseTracker() {
+            document.getElementById('expense-container').innerHTML = months.map(month => `
+                <div class="flex items-center justify-between py-1">
+                    <span class="text-sm font-bold text-gray-500 w-16">${month}</span>
+                    <div class="flex-1 relative">
+                        <input type="number" id="exp-${month}" placeholder="0" oninput="saveExpense()" class="w-full pr-8">
+                        <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- 기능 로직 ---
+
+        // 1. 투자 저장 및 계산
+        function saveAndCalc() {
+            const dataObj = {};
+            document.querySelectorAll('#monthly-container input[type="number"]').forEach(input => {
+                const m = input.dataset.month, k = input.dataset.key;
+                if (!dataObj[m]) dataObj[m] = {};
+                dataObj[m][k] = Number(input.value);
+            });
+            localStorage.setItem('project2026_data_v6', JSON.stringify(dataObj));
+            calculateTotalAndChart();
+        }
+
+        function calculateTotalAndChart() {
+            let grandTotal = 0;
+            let chartData = { snp: 0, nasdaq: 0, gold: 0, house: 0, irp: 0, savings: 0 };
+
+            months.forEach(month => {
+                const inputs = document.querySelectorAll(`input[data-month="${month}"]`);
+                let monthSum = 0;
+                inputs.forEach(input => {
+                    const val = Number(input.value);
+                    monthSum += val;
+                    if (document.getElementById(`check-${month}`).checked) {
+                        chartData[input.dataset.key] += val;
+                    }
+                });
+                document.getElementById(`sum-${month}`).innerText = monthSum.toLocaleString() + "만원";
+                if (document.getElementById(`check-${month}`).checked) {
+                    grandTotal += monthSum;
+                }
+            });
+
+            document.getElementById('totalAsset').innerText = (grandTotal * 10000).toLocaleString() + "원";
+            const percent = Math.min((grandTotal / 2400) * 100, 100).toFixed(1);
+            document.getElementById('progress-bar').style.width = percent + "%";
+            document.getElementById('progress-text').innerText = percent + "%";
+            updateChart(chartData);
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            const dataset = [data.snp, data.nasdaq, data.gold, data.house, data.irp, data.savings];
+            if (myChart) {
+                myChart.data.datasets[0].data = dataset;
+                myChart.update();
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: fieldConfig.map(f => f.label),
+                        datasets: [{ data: dataset, backgroundColor: fieldConfig.map(f => f.color), borderWidth: 0, hoverOffset: 4 }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+                    }
+                });
+            }
+        }
+
+        // 2. 수입 저장 및 계산 (NEW)
+        function saveIncome() {
+            const incomeData = {};
+            months.forEach(m => {
+                const salary = Number(document.getElementById(`salary-${m}`).value);
+                const bonus = Number(document.getElementById(`bonus-${m}`).value);
+                incomeData[m] = { salary, bonus };
+                document.getElementById(`income-total-${m}`).innerText = (salary + bonus).toLocaleString() + "만원";
+            });
+            localStorage.setItem('project2026_income_v6', JSON.stringify(incomeData));
+            calculateTotalIncome(); // 총액 업데이트
+        }
+
+        function calculateTotalIncome() {
+            let totalInc = 0;
+            months.forEach(m => {
+                const salary = Number(document.getElementById(`salary-${m}`).value);
+                const bonus = Number(document.getElementById(`bonus-${m}`).value);
+                totalInc += (salary + bonus);
+            });
+            document.getElementById('totalIncomeDisplay').innerText = (totalInc * 10000).toLocaleString() + "원";
+        }
+
+        function loadIncomeData() {
+            const saved = JSON.parse(localStorage.getItem('project2026_income_v6')) || {};
+            Object.keys(saved).forEach(m => {
+                if (document.getElementById(`salary-${m}`)) {
+                    document.getElementById(`salary-${m}`).value = saved[m].salary || '';
+                    document.getElementById(`bonus-${m}`).value = saved[m].bonus || '';
+                }
+            });
+            saveIncome(); // 개별 합계 및 총계 초기화
+        }
+
+        // 3. 생활비 저장
+        function saveExpense() {
+            const expData = {};
+            let totalExp = 0, count = 0;
+            months.forEach(m => {
+                const val = Number(document.getElementById(`exp-${m}`).value);
+                if (val > 0) {
+                    expData[m] = val;
+                    totalExp += val;
+                    count++;
+                }
+            });
+            localStorage.setItem('project2026_expenses_v6', JSON.stringify(expData));
+            document.getElementById('totalExpense').innerText = totalExp.toLocaleString() + "원";
+            document.getElementById('avgExpense').innerText = (count > 0 ? Math.round(totalExp / count) : 0).toLocaleString() + "원";
+        }
+
+        function loadExpenseData() {
+            const saved = JSON.parse(localStorage.getItem('project2026_expenses_v6')) || {};
+            Object.keys(saved).forEach(m => {
+                const el = document.getElementById(`exp-${m}`);
+                if (el) el.value = saved[m];
+            });
+            saveExpense();
+        }
+
+        // 4. 공통 로드 및 기능
+        function loadInvestmentData() {
+            const data = JSON.parse(localStorage.getItem('project2026_data_v6'));
+            const checks = JSON.parse(localStorage.getItem('project2026_checks_v6')) || {};
+            const memo = localStorage.getItem('project2026_memo_v6') || "";
+
+            if (data) {
+                Object.keys(data).forEach(m => {
+                    Object.keys(data[m]).forEach(k => {
+                        const el = document.querySelector(`input[data-month="${m}"][data-key="${k}"]`);
+                        if (el) el.value = data[m][k];
+                    });
+                });
+            }
+            Object.keys(checks).forEach(m => {
+                const chk = document.getElementById(`check-${m}`);
+                if (chk && checks[m]) {
+                    chk.checked = true;
+                    document.getElementById(`card-${m}`).classList.add('done');
+                }
+            });
+            document.getElementById('memoArea').value = memo;
+        }
+
+        function toggleDone(month) {
+            const chk = document.getElementById(`check-${month}`);
+            const card = document.getElementById(`card-${month}`);
+            if (chk.checked) card.classList.add('done');
+            else card.classList.remove('done');
+
+            const checks = JSON.parse(localStorage.getItem('project2026_checks_v6')) || {};
+            checks[month] = chk.checked;
+            localStorage.setItem('project2026_checks_v6', JSON.stringify(checks));
+
+            calculateTotalAndChart();
+            selectMonth(month);
+        }
+
+        function selectMonth(target) {
+            months.forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                const isChecked = document.getElementById(`check-${m}`).checked;
+                
+                if (m === target) {
+                    btn.className = "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-blue-600 text-white transform scale-105 transition-all whitespace-nowrap";
+                    document.getElementById(`card-${m}`).classList.remove('hidden');
+                    document.getElementById(`income-${m}`).classList.remove('hidden');
+                } else {
+                    btn.className = isChecked 
+                        ? "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-blue-200 bg-blue-50 text-blue-600 transition-all whitespace-nowrap"
+                        : "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-all whitespace-nowrap";
+                    document.getElementById(`card-${m}`).classList.add('hidden');
+                    document.getElementById(`income-${m}`).classList.add('hidden');
+                }
+            });
+            document.getElementById('current-month-display').innerText = target;
+        }
+
+        document.getElementById('memoArea').addEventListener('input', function() {
+            localStorage.setItem('project2026_memo_v6', this.value);
+        });
+
+    </script>
+</body>
+</html>
