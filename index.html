@@ -51,12 +51,14 @@
     <nav class="bg-blue-600 dark:bg-gray-800 text-white p-4 shadow-lg sticky top-0 z-50 transition-colors duration-300">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center justify-between w-full md:w-auto">
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold">🚀 2026 성과급 프로젝트</h1>
-                    <span class="text-xs bg-blue-500 dark:bg-gray-700 px-2 py-1 rounded font-mono">Ver 30.0</span>
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <h1 class="text-xl font-bold whitespace-nowrap">🚀 2026 성과급 프로젝트</h1>
+                    <!-- 명언 배너 (NEW) -->
+                    <span id="daily-quote" class="text-xs bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm truncate max-w-[200px] md:max-w-md italic opacity-90 hidden md:block"></span>
                 </div>
                 <button onclick="toggleTheme()" class="md:hidden p-2 rounded-full hover:bg-white/10 text-xl"><span id="theme-icon-m">🌙</span></button>
             </div>
+            
             <div class="flex items-center gap-3 w-full md:w-auto justify-center">
                 <div class="flex bg-blue-800 dark:bg-gray-700 bg-opacity-30 p-1 rounded-full overflow-x-auto max-w-full custom-scroll">
                     <button onclick="switchPage('main')" id="tab-main" class="tab-btn active text-sm">📊 1쪽: 메인</button>
@@ -66,6 +68,9 @@
                 </div>
                 <button onclick="toggleTheme()" class="hidden md:block p-2 rounded-full hover:bg-white/10 text-xl"><span id="theme-icon-pc">🌙</span></button>
             </div>
+            
+            <!-- 모바일용 명언 (줄바꿈) -->
+            <div id="daily-quote-m" class="text-xs text-blue-100 text-center w-full md:hidden italic opacity-80"></div>
         </div>
     </nav>
 
@@ -87,7 +92,7 @@
                 </div>
 
                 <div class="mt-6">
-                    <div class="flex justify-between items-center text-xs text-blue-100 mb-1"><div class="flex items-center gap-1"><span>🎯 목표:</span><input type="number" id="target-goal" value="2400" oninput="calculateTotalAndChart()" class="w-16 bg-blue-800 bg-opacity-40 border-none text-white text-right font-bold p-0.5 rounded focus:ring-1 focus:ring-white"><span>만원</span></div><span id="progress-text" class="font-bold">0%</span></div>
+                    <div class="flex justify-between items-center text-xs text-blue-100 mb-1"><div class="flex items-center gap-1"><span>🎯 저축액 목표:</span><input type="number" id="target-goal" value="2400" oninput="calculateTotalAndChart()" class="w-16 bg-blue-800 bg-opacity-40 border-none text-white text-right font-bold p-0.5 rounded focus:ring-1 focus:ring-white"><span>만원</span></div><span id="progress-text" class="font-bold">0%</span></div>
                     <div class="relative w-full h-4 mt-2 mb-2"><div class="w-full bg-blue-900 bg-opacity-30 h-1.5 rounded-full overflow-hidden absolute bottom-0"><div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div></div><div id="milestones-container" class="absolute top-0 w-full h-full pointer-events-none"></div></div>
                 </div>
             </div>
@@ -163,7 +168,7 @@
         </div>
     </div>
 
-    <!-- [PAGE 4] 미래 설계 (NEW: 이름 변경 & 안전 로직) -->
+    <!-- [PAGE 4] 미래 설계 (유지) -->
     <div id="page-future" class="max-w-6xl mx-auto p-4 space-y-6 hidden">
         <div class="card bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-none shadow-xl text-center py-8">
             <h2 class="text-2xl font-bold mb-2">🐉 금융 다마고치</h2><p class="text-purple-100 text-sm mb-6">자산이 늘어나면 펫이 진화합니다!</p>
@@ -175,16 +180,13 @@
         <div class="card bg-white dark:bg-gray-800">
             <h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2 text-indigo-800 dark:text-indigo-200 flex justify-between items-center">🗺️ 연도별 자산 로드맵<span class="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">연도를 클릭하세요</span></h3>
             
-            <!-- 연도 선택 탭 (업데이트) -->
             <div class="flex gap-2 overflow-x-auto mb-6 pb-2 custom-scroll" id="yearly-tabs"><!-- JS로 생성됨 --></div>
 
-            <!-- 상세 분석 화면 -->
             <div id="yearly-detail-view" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 text-center border dark:border-gray-600">
-                <h4 class="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-2" id="yd-title">2026 (2년차) 목표</h4>
+                <h4 class="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-2" id="yd-title">2026 (1년차) 목표</h4>
                 <div class="flex flex-col items-center justify-center gap-4 mb-6">
                     <div class="flex items-center gap-2 justify-center">
                         <span class="text-gray-500 dark:text-gray-300 text-sm">목표 금액:</span>
-                        <!-- ID 충돌 방지를 위해 future_ 접두사 사용 -->
                         <input type="number" id="future_yd-input" oninput="saveFutureGoals()" class="text-xl font-bold text-right w-32 border-b-2 border-indigo-300 dark:border-indigo-500 bg-transparent focus:outline-none dark:text-white" placeholder="0">
                         <span class="text-gray-500 dark:text-gray-300">만원</span>
                     </div>
@@ -203,8 +205,6 @@
 
     <!-- 하단 -->
     <div class="text-center mt-12 mb-8 text-xs text-gray-400 dark:text-gray-600 space-y-4">
-        <div class="flex justify-center"><button onclick="openFortuneCookie()" class="fortune-btn bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 px-4 py-2 rounded-full shadow-sm text-yellow-800 dark:text-yellow-200 font-bold flex items-center gap-2">🥠 오늘의 금융 포춘쿠키 열기</button></div>
-        <div id="fortune-msg" class="hidden text-sm font-bold text-blue-600 dark:text-blue-400 fortune-text"></div>
         <p>⚠️ 브라우저 캐시 삭제 시 데이터가 사라질 수 있습니다. 주기적으로 백업하세요.</p>
         <div class="flex justify-center gap-4"><button onclick="downloadBackup()" class="flex items-center gap-1 hover:text-blue-500 transition">💾 데이터 백업</button><label class="flex items-center gap-1 hover:text-green-500 transition cursor-pointer">📂 데이터 복구<input type="file" class="hidden" accept=".json" onchange="restoreBackup(this)"></label></div>
         <p class="opacity-50">Designed for 2026 Financial Freedom</p>
@@ -219,25 +219,35 @@
         let currentFieldConfig=[], preDataStore={}, journalData=[], portfolioData=[], currentSort={key:'profit',order:'desc'};
         let achievedMilestones = new Set();
         
-        // 연도 데이터 (수정됨)
+        // 연도 데이터
         const roadmapData = [
-            { year: 2025, label: "2025 (1년차)" },
-            { year: 2026, label: "2026 (2년차)" },
-            { year: 2027, label: "2027 (3년차)" },
-            { year: 2028, label: "2028 (4년차)" },
-            { year: 2029, label: "2029 (5년차)" },
-            { year: 2030, label: "2030 (6년차)" }
+            { year: 2025, label: "2025 (준비)" },
+            { year: 2026, label: "2026 (1년차)" },
+            { year: 2027, label: "2027 (2년차)" },
+            { year: 2028, label: "2028 (3년차)" },
+            { year: 2029, label: "2029 (4년차)" },
+            { year: 2030, label: "2030 (5년차)" }
         ];
         let selectedYear = 2026;
-        let futureGoals = {}; // 4쪽 전용 데이터
+        let futureGoals = {};
 
-        // 다크모드
+        // --- 명언 ---
+        const quotes = ["오늘의 참음은 내일의 자유다.", "복리는 우주에서 가장 강력한 힘이다. - 아인슈타인", "가격은 당신이 지불하는 것이고, 가치는 당신이 얻는 것이다. - 워렌 버핏", "부자가 되는 가장 확실한 방법은, 돈을 쓰지 않는 것이다.", "잠자는 동안에도 돈이 들어오는 방법을 찾아라.", "작은 구멍 하나가 거대한 배를 침몰시킨다. - 벤저민 프랭클린", "투자하지 않는 것이 가장 큰 위험이다.", "돈의 주인은 당신이다. 돈에게 지배당하지 마라.", "소비는 감정이고, 저축은 이성이다."];
+
+        // 다크모드 & 명언 로드
         function loadTheme(){ const t=localStorage.getItem('theme'); if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');updateThemeIcon(true);}else{document.documentElement.classList.remove('dark');updateThemeIcon(false);} }
         function toggleTheme(){ const isDark=document.documentElement.classList.toggle('dark'); localStorage.setItem('theme',isDark?'dark':'light'); updateThemeIcon(isDark); updateChartsTheme(isDark); }
         function updateThemeIcon(isDark){ const i=isDark?'☀️':'🌙'; document.getElementById('theme-icon-pc').innerText=i; document.getElementById('theme-icon-m').innerText=i; }
         function updateChartsTheme(isDark){ const tc=isDark?'#e5e7eb':'#374151', gc=isDark?'#374151':'#e5e7eb'; Chart.defaults.color=tc; Chart.defaults.borderColor=gc; [myChart,mainSavingsChart,growthChart,preSavingsChart,stockPieChart].forEach(c=>{if(c)c.update();}); }
+        function setDailyQuote() {
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            const el1 = document.getElementById('daily-quote');
+            const el2 = document.getElementById('daily-quote-m');
+            if(el1) el1.innerText = `"${q}"`;
+            if(el2) el2.innerText = `"${q}"`;
+        }
 
-        window.onload=function(){ loadTheme(); initApp(); setTimeout(()=>updateChartsTheme(document.documentElement.classList.contains('dark')),100); };
+        window.onload=function(){ loadTheme(); initApp(); setDailyQuote(); setTimeout(()=>updateChartsTheme(document.documentElement.classList.contains('dark')),100); };
 
         function switchPage(pageName){
             ['main','pre','journal','future'].forEach(p=>{document.getElementById(`page-${p}`).classList.add('hidden');document.getElementById(`tab-${p}`).className="tab-btn inactive text-sm bg-transparent text-blue-200 dark:text-gray-400 hover:text-white";});
@@ -247,41 +257,25 @@
 
         function initApp(){
             try {
-                // 1, 2, 3쪽 초기화 (우선 실행)
                 loadFieldConfig(); initializeData(); loadSeedData(); renderMonthNav(); renderInvestmentCards(); renderIncomeCards(); renderExpenseTracker(); loadInvestmentData(); loadIncomeData(); loadExpenseData(); calculateTotalAndChart(); calculateTotalIncome(); selectMonth(months[0]);
                 initPreData(); renderPreCards(); updatePreCards();
                 initJournal(); initPortfolio();
-            } catch (e) { console.error("Page 1-3 Init Error:", e); }
-
-            // 4쪽 초기화 (안전하게 분리 실행)
-            try {
-                initFuturePage();
-            } catch (e) { console.error("Page 4 Init Error:", e); }
+            } catch (e) { console.error(e); }
+            try { initFuturePage(); } catch (e) { console.error(e); }
         }
 
         // --- PAGE 4: FUTURE (독립 로직) ---
         function initFuturePage() {
-            // 데이터 로드
             const s = localStorage.getItem('project2026_future_goals');
-            if(s) futureGoals = JSON.parse(s);
-            else futureGoals = {};
-
-            initPet();
-            renderYearlyTabs();
-            updateYearlyDetailUI();
+            if(s) futureGoals = JSON.parse(s); else futureGoals = {};
+            initPet(); renderYearlyTabs(); updateYearlyDetailUI();
         }
-
         function renderYearlyTabs() {
             const container = document.getElementById('yearly-tabs');
             if(!container) return;
-            container.innerHTML = roadmapData.map(d => `
-                <button onclick="selectYear(${d.year})" id="y-tab-${d.year}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 whitespace-nowrap transition-all">
-                    ${d.label}
-                </button>
-            `).join('');
+            container.innerHTML = roadmapData.map(d => `<button onclick="selectYear(${d.year})" id="y-tab-${d.year}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 whitespace-nowrap transition-all">${d.label}</button>`).join('');
             selectYear(selectedYear);
         }
-
         function selectYear(year) {
             selectedYear = year;
             roadmapData.forEach(d => {
@@ -293,38 +287,30 @@
             });
             updateYearlyDetailUI();
         }
-
         function saveFutureGoals() {
             const val = document.getElementById('future_yd-input').value;
             futureGoals[selectedYear] = val ? Number(val) : 0;
             localStorage.setItem('project2026_future_goals', JSON.stringify(futureGoals));
             updateYearlyDetailUI();
         }
-
         function updateYearlyDetailUI() {
-            // 현재 자산 가져오기 (안전하게)
             let currentAsset = 0;
             const t = document.getElementById('totalAsset');
             if(t) currentAsset = parseInt(t.innerText.replace(/[^0-9]/g,""))/10000;
-
             const target = futureGoals[selectedYear] || 0;
             const labelObj = roadmapData.find(d => d.year === selectedYear);
-            
             const titleEl = document.getElementById('yd-title');
-            const inputEl = document.getElementById('future_yd-input'); // ID 주의
+            const inputEl = document.getElementById('future_yd-input');
             const bar = document.getElementById('yd-bar');
             const percentEl = document.getElementById('yd-percent');
             const gapEl = document.getElementById('yd-gap');
             const msgEl = document.getElementById('yd-msg');
-
             if(titleEl) titleEl.innerText = labelObj ? labelObj.label + " 목표" : selectedYear + "년 목표";
             if(inputEl) inputEl.value = target || '';
-
             if(target > 0) {
                 const pct = Math.min((currentAsset / target) * 100, 100);
                 if(bar) bar.style.width = pct + "%";
                 if(percentEl) percentEl.innerText = pct.toFixed(1) + "%";
-
                 if(currentAsset >= target) {
                     if(bar) bar.className = "h-full bg-green-500 transition-all duration-700";
                     if(gapEl) { gapEl.innerText = `+${(currentAsset - target).toLocaleString()}만`; gapEl.className = "text-lg font-bold text-green-500"; }
@@ -335,36 +321,24 @@
                     if(msgEl) { msgEl.innerText = "진행 중 🔥"; msgEl.className = "text-sm font-bold text-indigo-600 dark:text-indigo-400"; }
                 }
             } else {
-                if(bar) bar.style.width = "0%";
-                if(percentEl) percentEl.innerText = "0%";
+                if(bar) bar.style.width = "0%"; if(percentEl) percentEl.innerText = "0%";
                 if(gapEl) { gapEl.innerText = "-"; gapEl.className = "text-lg font-bold text-gray-400"; }
                 if(msgEl) { msgEl.innerText = "목표를 설정하세요."; msgEl.className = "text-sm font-bold text-gray-400"; }
             }
-
-            // 펫 업데이트 (현재 자산 기준)
-            updatePetStatus(currentAsset, target); 
+            updatePetStatus(currentAsset, target);
         }
-
-        function initPet() {
-            // 펫 초기화는 UI 업데이트 시 같이 수행됨
-        }
+        function initPet() { }
         function updatePetStatus(projSave, goal) {
-            const petIcon = document.getElementById('pet-icon');
-            const petMsg = document.getElementById('pet-message');
+            const petIcon = document.getElementById('pet-icon'); const petMsg = document.getElementById('pet-message');
             if(!petIcon) return;
-            // goal이 0이면 전체 목표(2400) 기준으로 재미 삼아 보여줌
-            const baseGoal = goal > 0 ? goal : 2400; 
-            const ratio = projSave / baseGoal;
-            
+            const ratio = goal > 0 ? projSave/goal : 0;
             let icon="🥚", msg="아직은 알이에요.";
             if(ratio>=1.0) { icon="🐉"; msg="드래곤으로 진화! 목표 달성!"; }
             else if(ratio>=0.8) { icon="🦅"; msg="독수리! 거의 다 왔어요."; }
             else if(ratio>=0.6) { icon="🦉"; msg="부엉이! 지혜롭게 모으는 중."; }
             else if(ratio>=0.4) { icon="🐥"; msg="병아리! 쑥쑥 크고 있어요."; }
             else if(ratio>=0.2) { icon="🐣"; msg="알을 깨고 나왔어요!"; }
-            
-            petIcon.innerText = icon;
-            petMsg.innerText = `"${msg}"`;
+            petIcon.innerText = icon; petMsg.innerText = `"${msg}"`;
         }
         function petTalk() {
             const msgs = ["부자 되세요!", "복리의 마법!", "오늘도 화이팅!", "낭비 금지!", "가즈아~!"];
@@ -428,11 +402,11 @@
         function updateLevelBadge(currentAsset) {
             const badge = document.getElementById('level-badge'); const nextGap = document.getElementById('next-level-gap');
             let level="🌱 씨앗", nextLevel=1000, colorClass="bg-green-100 text-green-800";
-            if(currentAsset >= 30000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
-            else if(currentAsset >= 14000) { level="💎 다이아몬드"; nextLevel=30000; colorClass="bg-blue-100 text-blue-800"; }
-            else if(currentAsset >= 7000) { level="🥇 골드"; nextLevel=14000; colorClass="bg-yellow-100 text-yellow-800"; }
-            else if(currentAsset >= 3000) { level="🥈 실버"; nextLevel=7000; colorClass="bg-gray-200 text-gray-800"; }
-            else if(currentAsset >= 1000) { level="🥉 브론즈"; nextLevel=3000; colorClass="bg-orange-100 text-orange-800"; }
+            if(currentAsset >= 50000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
+            else if(currentAsset >= 30000) { level="💎 다이아몬드"; nextLevel=50000; colorClass="bg-blue-100 text-blue-800"; }
+            else if(currentAsset >= 10000) { level="🥇 골드"; nextLevel=30000; colorClass="bg-yellow-100 text-yellow-800"; }
+            else if(currentAsset >= 5000) { level="🥈 실버"; nextLevel=10000; colorClass="bg-gray-200 text-gray-800"; }
+            else if(currentAsset >= 1000) { level="🥉 브론즈"; nextLevel=5000; colorClass="bg-orange-100 text-orange-800"; }
             badge.innerText = level; badge.className = `px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border border-white/30 ${colorClass}`;
             const prevLevel = localStorage.getItem('project2026_level');
             if(prevLevel && prevLevel !== level) { badge.classList.add('level-up-anim'); triggerConfetti(); setTimeout(()=>badge.classList.remove('level-up-anim'), 1000); }
