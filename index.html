@@ -5,399 +5,611 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 성과급 프로젝트</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .month-card.done { border: 2px solid #3b82f6; background-color: #eff6ff; }
-        .month-card.done .input-group input { background-color: #ffffff; color: #3b82f6; font-weight: bold; }
+        body { font-family: 'Pretendard', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .card { border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s; }
         .custom-scroll::-webkit-scrollbar { height: 8px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; margin: 0 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-        input[type="number"] { padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 6px; text-align: right; font-size: 0.9rem; transition: all 0.2s; }
-        input[type="number"]:focus { outline: none; border-color: #3b82f6; }
-        input[type="text"]:focus { outline: none; border-color: #3b82f6; }
-        .tab-btn { padding: 10px 20px; font-weight: bold; border-radius: 9999px; transition: all 0.2s; }
-        .tab-btn.active { background-color: white; color: #2563eb; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .tab-btn.inactive { background-color: transparent; color: #bfdbfe; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; margin: 0 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background: #475569; }
+        input, select, textarea { border-width: 1px; border-radius: 6px; padding: 6px 8px; font-size: 0.9rem; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; }
+        input[type="number"] { text-align: right; }
+        input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; }
+        .dark input:read-only { background-color: #374151; color: #9ca3af; }
+        .tab-btn { padding: 8px 16px; font-weight: bold; border-radius: 9999px; transition: all 0.2s; white-space: nowrap; }
+        .month-card.done { border: 2px solid #3b82f6; }
+        html:not(.dark) .month-card.done { background-color: #eff6ff; }
+        html.dark .month-card.done { background-color: #1e3a8a; border-color: #60a5fa; }
+        .text-up { color: #ef4444; } .text-down { color: #3b82f6; }
+        html.dark .text-up { color: #f87171; } html.dark .text-down { color: #60a5fa; }
+        .bg-up-light { background-color: #fef2f2; } .bg-down-light { background-color: #eff6ff; }
+        html.dark .bg-up-light { background-color: rgba(239, 68, 68, 0.1); } html.dark .bg-down-light { background-color: rgba(59, 130, 246, 0.1); }
+        th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; }
+        th.sortable:hover { background-color: rgba(0,0,0,0.05); }
+        .dark th.sortable:hover { background-color: rgba(255,255,255,0.1); }
+        .milestone-marker { position: absolute; bottom: 100%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; transition: all 0.5s; }
+        .milestone-flag { font-size: 10px; margin-bottom: 2px; transition: all 0.5s; }
+        .milestone-line { width: 1px; height: 6px; background-color: rgba(255,255,255,0.5); }
+        .milestone-achieved .milestone-flag { transform: scale(1.5); text-shadow: 0 0 10px yellow; }
+        @keyframes levelUp { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .level-up-anim { animation: levelUp 0.5s ease-in-out; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .pet-anim { animation: bounce 2s infinite ease-in-out; cursor: pointer; }
     </style>
 </head>
-<body class="text-gray-800 pb-20">
+<body class="text-gray-800 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 pb-20">
 
-    <nav class="bg-blue-600 text-white p-4 shadow-lg sticky top-0 z-50">
+    <nav class="bg-blue-600 dark:bg-gray-800 text-white p-4 shadow-lg sticky top-0 z-50 transition-colors duration-300">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-2">
-                <h1 class="text-xl font-bold">🚀 2026 성과급 프로젝트</h1>
-                <span class="text-xs bg-blue-500 px-2 py-1 rounded font-mono">Ver 12.0</span>
+            <div class="flex items-center justify-between w-full md:w-auto">
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold">🚀 2026 성과급 프로젝트</h1>
+                    <span class="text-xs bg-blue-500 dark:bg-gray-700 px-2 py-1 rounded font-mono">Ver 30.0</span>
+                </div>
+                <button onclick="toggleTheme()" class="md:hidden p-2 rounded-full hover:bg-white/10 text-xl"><span id="theme-icon-m">🌙</span></button>
             </div>
-            <div class="flex bg-blue-800 bg-opacity-30 p-1 rounded-full">
-                <button onclick="switchPage('main')" id="tab-main" class="tab-btn active text-sm">📊 1쪽: 메인 프로젝트</button>
-                <button onclick="switchPage('pre')" id="tab-pre" class="tab-btn inactive text-sm">🌱 2쪽: 준비 기간</button>
+            <div class="flex items-center gap-3 w-full md:w-auto justify-center">
+                <div class="flex bg-blue-800 dark:bg-gray-700 bg-opacity-30 p-1 rounded-full overflow-x-auto max-w-full custom-scroll">
+                    <button onclick="switchPage('main')" id="tab-main" class="tab-btn active text-sm">📊 1쪽: 메인</button>
+                    <button onclick="switchPage('pre')" id="tab-pre" class="tab-btn inactive text-sm">🌱 2쪽: 준비</button>
+                    <button onclick="switchPage('journal')" id="tab-journal" class="tab-btn inactive text-sm">📈 3쪽: 투자</button>
+                    <button onclick="switchPage('future')" id="tab-future" class="tab-btn inactive text-sm">🔮 4쪽: 미래</button>
+                </div>
+                <button onclick="toggleTheme()" class="hidden md:block p-2 rounded-full hover:bg-white/10 text-xl"><span id="theme-icon-pc">🌙</span></button>
             </div>
         </div>
     </nav>
 
-    <!-- [PAGE 1] 메인 프로젝트 -->
+    <!-- [PAGE 1] 메인 (유지) -->
     <div id="page-main" class="max-w-6xl mx-auto p-4 space-y-6">
-        
-        <!-- 상단 스코어보드 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="card bg-gradient-to-br from-blue-700 to-blue-500 text-white border-none shadow-xl relative overflow-hidden">
+            <div class="card bg-gradient-to-br from-blue-700 to-blue-500 dark:from-blue-900 dark:to-blue-800 text-white border-none shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-blue-100 text-sm font-medium">💰 현재 총 자산 (기존+신규)</p>
-                    <span class="text-xs bg-blue-800 bg-opacity-30 px-2 py-1 rounded">Net Worth</span>
+                <div class="absolute top-4 right-4 flex flex-col items-end">
+                    <span id="level-badge" class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border border-white/30">🌱 씨앗</span>
+                    <span id="next-level-gap" class="text-[10px] text-blue-100 mt-1">다음 레벨까지 500만</span>
                 </div>
+                <div class="flex justify-between items-start mb-2"><p class="text-blue-100 text-sm font-medium">💰 현재 총 자산 (시드+저축)</p><span class="text-xs bg-blue-800 bg-opacity-30 px-2 py-1 rounded">Net Worth</span></div>
                 <h2 class="text-3xl font-bold tracking-tight" id="totalAsset">0원</h2>
-                <div class="mt-4">
-                    <div class="flex justify-between text-xs text-blue-100 mb-1">
-                        <span>프로젝트 목표 달성률 (2400만 기준)</span>
-                        <span id="progress-text" class="font-bold">0%</span>
-                    </div>
-                    <div class="w-full bg-blue-900 bg-opacity-30 h-1.5 rounded-full overflow-hidden">
-                        <div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
+                
+                <div class="mt-4 bg-black bg-opacity-20 rounded-lg p-3 text-sm space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-blue-200 text-xs">🏁 목표 기한</span><div class="flex items-center gap-2"><span id="d-day-badge" class="hidden bg-yellow-400 text-blue-900 text-[10px] font-bold px-1.5 py-0.5 rounded">D-day</span><input type="month" id="target-deadline" onchange="calculateTotalAndChart()" class="bg-white bg-opacity-20 border-none text-white text-xs p-1 rounded focus:ring-1 focus:ring-white"></div></div>
+                    <div class="flex justify-between items-center border-t border-blue-400 border-opacity-30 pt-2"><span class="text-blue-100">📅 예상 달성일</span><div class="text-right"><div class="font-bold text-white" id="prediction-date">계산 중...</div><div class="text-xs" id="prediction-diff"></div></div></div>
+                </div>
+
+                <div class="mt-6">
+                    <div class="flex justify-between items-center text-xs text-blue-100 mb-1"><div class="flex items-center gap-1"><span>🎯 목표:</span><input type="number" id="target-goal" value="2400" oninput="calculateTotalAndChart()" class="w-16 bg-blue-800 bg-opacity-40 border-none text-white text-right font-bold p-0.5 rounded focus:ring-1 focus:ring-white"><span>만원</span></div><span id="progress-text" class="font-bold">0%</span></div>
+                    <div class="relative w-full h-4 mt-2 mb-2"><div class="w-full bg-blue-900 bg-opacity-30 h-1.5 rounded-full overflow-hidden absolute bottom-0"><div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-500" style="width: 0%"></div></div><div id="milestones-container" class="absolute top-0 w-full h-full pointer-events-none"></div></div>
                 </div>
             </div>
-
-            <div class="card bg-gradient-to-br from-emerald-600 to-emerald-400 text-white border-none shadow-xl relative overflow-hidden">
+            
+            <div class="card bg-gradient-to-br from-emerald-600 to-emerald-400 dark:from-emerald-800 dark:to-emerald-700 text-white border-none shadow-xl relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                <div class="flex justify-between items-start mb-2">
-                    <p class="text-emerald-100 text-sm font-medium">💵 프로젝트 기간 총 수입</p>
-                    <span class="text-xs bg-emerald-800 bg-opacity-30 px-2 py-1 rounded">Income</span>
-                </div>
+                <div class="flex justify-between items-start mb-2"><p class="text-emerald-100 text-sm font-medium">💵 프로젝트 총 수입</p><span class="text-xs bg-emerald-800 bg-opacity-30 px-2 py-1 rounded">Income</span></div>
                 <h2 class="text-3xl font-bold tracking-tight" id="totalIncomeDisplay">0원</h2>
-                <div class="mt-4 flex items-center text-xs text-emerald-100 opacity-90">
-                    <span class="mr-1">ℹ️</span>
-                    <span>월급과 모든 수당이 합산된 금액입니다.</span>
-                </div>
+                <div class="mt-4 flex items-center text-xs text-emerald-100 opacity-90"><span class="mr-1">ℹ️</span><span>월급과 모든 수당이 합산된 금액입니다.</span></div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- 좌측: 입력란 -->
             <div class="lg:col-span-7 space-y-4">
-                <div class="flex justify-between items-center px-1">
-                    <h3 class="text-lg font-bold flex items-center">📅 월별 기록장 <span id="current-month-display" class="ml-2 text-blue-600 text-base"></span></h3>
-                </div>
-                <div class="bg-gray-100 p-2 rounded-xl shadow-inner">
-                    <div id="month-nav" class="flex space-x-2 overflow-x-auto custom-scroll pb-2 select-none"></div>
-                </div>
+                <div class="flex justify-between items-center px-1"><h3 class="text-lg font-bold flex items-center">📅 월별 기록장 <span id="current-month-display" class="ml-2 text-blue-600 dark:text-blue-400 text-base"></span></h3><button onclick="toggleSettings()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm flex items-center gap-1 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800">⚙️ 항목 관리</button></div>
+                <div id="settings-panel" class="hidden card border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 mb-4"><h4 class="font-bold text-sm mb-3 dark:text-gray-200">🛠️ 투자 항목 설정</h4><div class="flex gap-2 mb-4"><input type="text" id="new-item-name" placeholder="새 항목 이름" class="flex-1 p-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"><input type="color" id="new-item-color" value="#3b82f6" class="h-9 w-9 p-0 border rounded cursor-pointer dark:bg-gray-700 dark:border-gray-600"><button onclick="addNewField()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">추가</button></div><ul id="field-list" class="space-y-2 text-sm"></ul></div>
+                <div class="bg-gray-100 dark:bg-gray-800 p-2 rounded-xl shadow-inner"><div id="month-nav" class="flex space-x-2 overflow-x-auto custom-scroll pb-2 select-none"></div></div>
                 <div id="monthly-container"></div>
                 <div id="income-container"></div>
-                <div class="card mt-4">
-                    <h3 class="text-sm font-bold mb-2 text-gray-500">📝 투자 메모</h3>
-                    <textarea id="memoArea" class="w-full h-20 border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="자유롭게 메모하세요. (자동 저장)"></textarea>
+                <div class="card bg-white dark:bg-gray-800 mt-4"><h3 class="text-sm font-bold mb-2 text-gray-500 dark:text-gray-400">📝 투자 메모</h3><textarea id="memoArea" class="w-full h-20 border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="자유롭게 메모하세요. (자동 저장)"></textarea></div>
+            </div>
+            <div class="lg:col-span-5 space-y-6">
+                <div class="card bg-white dark:bg-gray-800 border-l-4 border-indigo-500">
+                    <div class="flex justify-between items-center mb-3"><h3 class="text-sm font-bold text-indigo-900 dark:text-indigo-200">🏦 기존 자산 (상세 입력)</h3><span class="text-xs text-indigo-400 dark:text-indigo-300 font-normal">단위: 만원</span></div>
+                    <div class="mb-3"><p class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">🛡️ 안전 자산 (예적금)</p><div class="grid grid-cols-3 gap-2"><input type="number" id="seed-deposit" oninput="saveSeedData()" placeholder="예금" class="text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"><input type="number" id="seed-savings" oninput="saveSeedData()" placeholder="적금" class="text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"><input type="number" id="seed-house" oninput="saveSeedData()" placeholder="청약" class="text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div></div>
+                    <div><p class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">📈 투자 자산</p><div class="grid grid-cols-2 gap-2"><div class="relative"><input type="number" id="seed-stock" readonly class="w-full text-sm font-bold text-blue-600 dark:text-blue-400"><span class="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">3쪽연동</span></div><input type="number" id="seed-bond" oninput="saveSeedData()" placeholder="채권/기타" class="text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div></div>
+                    <div class="mt-3 pt-2 border-t dark:border-gray-700 flex justify-between items-center"><span class="text-xs text-gray-500 dark:text-gray-400">기존 자산 합계</span><span class="font-bold text-indigo-600 dark:text-indigo-300" id="seed-total-display">0만원</span></div>
+                </div>
+                <div class="card bg-white dark:bg-gray-800"><h3 class="text-lg font-bold mb-4 border-b dark:border-gray-700 pb-2">📈 자산 성장 추이</h3><div class="h-48 flex justify-center items-center"><canvas id="growthChart"></canvas></div></div>
+                <div class="card bg-white dark:bg-gray-800 relative"><h3 class="text-lg font-bold mb-4 border-b dark:border-gray-700 pb-2">💰 이번 프로젝트 저축률</h3><div class="h-48 flex justify-center items-center relative"><canvas id="mainSavingsChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-xs text-gray-400">저축률</span><span class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="mainSavingsText">0%</span></div></div></div>
+                <div class="card bg-white dark:bg-gray-800"><h3 class="text-lg font-bold mb-4 border-b dark:border-gray-700 pb-2">📊 신규 투자 포트폴리오</h3><div class="h-48 flex justify-center items-center"><canvas id="portfolioChart"></canvas></div></div>
+                <div class="card bg-white dark:bg-gray-800"><div class="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2"><h3 class="text-lg font-bold">🛒 생활비 지출</h3><span class="text-xs bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-2 py-1 rounded-full font-bold">예산: 15~20만</span></div><div class="grid grid-cols-2 gap-2 mb-4"><div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-center"><p class="text-xs text-gray-500 dark:text-gray-400">총 지출</p><p class="font-bold text-gray-700 dark:text-gray-200" id="totalExpense">0원</p></div><div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-center"><p class="text-xs text-gray-500 dark:text-gray-400">월 평균</p><p class="font-bold text-gray-700 dark:text-gray-200" id="avgExpense">0원</p></div></div><div class="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scroll" id="expense-container"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- [PAGE 2] 준비 (유지) -->
+    <div id="page-pre" class="max-w-6xl mx-auto p-4 space-y-6 hidden">
+        <div class="card bg-indigo-600 dark:bg-indigo-800 text-white border-none shadow-xl"><h2 class="text-2xl font-bold">🌱 프로젝트 준비 기간 (프리 시즌)</h2><p class="text-indigo-100 text-sm mt-1">본격 시작 전, 종잣돈 확보 및 지출 구조조정</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="pre-container"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card bg-indigo-50 dark:bg-indigo-900 border border-indigo-200 dark:border-indigo-700 flex flex-col justify-center gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-indigo-200 dark:border-indigo-700 pb-4">
+                    <div class="flex flex-col border-b md:border-b-0 md:border-r border-indigo-200 dark:border-indigo-700 pb-2 md:pb-0"><span class="font-bold text-gray-500 dark:text-gray-400 text-xs mb-1">📅 총 수입</span><span class="text-xl font-bold text-gray-800 dark:text-white" id="pre-total-income-sum">0원</span></div>
+                    <div class="flex flex-col border-b md:border-b-0 md:border-r border-indigo-200 dark:border-indigo-700 pb-2 md:pb-0"><span class="font-bold text-gray-500 dark:text-gray-400 text-xs mb-1">💸 총 지출</span><span class="text-xl font-bold text-red-600 dark:text-red-400" id="pre-total-exp-sum">0원</span></div>
+                    <div class="flex flex-col"><span class="font-bold text-gray-500 dark:text-gray-400 text-xs mb-1">💰 총 저축</span><span class="text-xl font-bold text-indigo-700 dark:text-indigo-300" id="pre-total-save-sum">0원</span></div>
+                </div>
+                <div>
+                    <div class="flex justify-between items-center text-xs text-indigo-500 dark:text-indigo-300 mb-1 font-bold"><div class="flex items-center gap-1"><span>🎯 목표:</span><input type="number" id="pre-target-goal" value="500" oninput="calcPreTotals()" class="w-14 bg-indigo-50 dark:bg-gray-700 border border-indigo-200 dark:border-indigo-600 text-right p-0.5 rounded text-indigo-700 dark:text-indigo-200"><span>만원</span></div><span id="pre-progress-text">0%</span></div>
+                    <div class="relative w-full h-4 mb-3"><div class="w-full bg-indigo-100 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden absolute bottom-0"><div id="pre-progress-bar" class="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div></div><div id="pre-milestones-container" class="absolute top-0 w-full h-full pointer-events-none"></div></div>
+                    <div class="bg-white dark:bg-gray-800 rounded p-2 text-xs border border-indigo-100 dark:border-indigo-700">
+                        <div class="flex justify-between items-center mb-1"><div class="flex items-center gap-2"><span class="text-gray-500 dark:text-gray-400">🏁 기한</span><span id="pre-d-day-badge" class="hidden bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-200 text-[10px] font-bold px-1.5 py-0.5 rounded">D-day</span><input type="month" id="pre-target-deadline" onchange="calcPreTotals()" class="bg-transparent border-none text-indigo-600 dark:text-indigo-300 text-xs p-0 w-20 cursor-pointer focus:ring-0"></div></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-500 dark:text-gray-400">📅 예상 달성</span><div class="text-right"><span class="font-bold text-gray-800 dark:text-white" id="pre-prediction-date">계산 중...</span><span class="ml-1" id="pre-prediction-diff"></span></div></div>
+                    </div>
                 </div>
             </div>
+            <div class="card bg-white dark:bg-gray-800 relative flex flex-col items-center justify-center"><h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 w-full text-left">📈 프리 시즌 저축 성적표</h3><div class="h-40 w-full flex justify-center items-center relative"><canvas id="preSavingsChart"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span class="text-xs text-gray-400">저축률</span><span class="text-xl font-bold text-indigo-600 dark:text-indigo-400" id="preSavingsText">0%</span></div></div></div>
+        </div>
+    </div>
 
-            <!-- 우측: 분석란 -->
-            <div class="lg:col-span-5 space-y-6">
-                
-                <!-- 0. 기존 자산 입력 (NEW!) -->
-                <div class="card border-l-4 border-indigo-500 bg-indigo-50">
-                    <h3 class="text-sm font-bold text-indigo-900 mb-2 flex items-center">
-                        🏦 기존 보유 자산 (시드머니)
-                        <span class="ml-2 text-xs text-indigo-400 font-normal">프로젝트 전 모은 돈</span>
-                    </h3>
-                    <div class="relative">
-                        <input type="number" id="base-asset" oninput="saveBaseAsset()" class="w-full bg-white border-indigo-200 focus:border-indigo-500 text-lg font-bold text-indigo-700 p-2" placeholder="0">
-                        <span class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 text-sm">만원</span>
+    <!-- [PAGE 3] 투자 (유지) -->
+    <div id="page-journal" class="max-w-6xl mx-auto p-4 space-y-6 hidden">
+        <div class="card bg-gray-800 dark:bg-gray-700 text-white border-none shadow-xl"><h2 class="text-2xl font-bold">📈 내 주식 투자 현황</h2><p class="text-gray-400 text-sm mt-1">평단가와 현재가를 입력하면 1쪽 시드머니에 자동 반영됩니다.</p></div>
+        <div class="card bg-white dark:bg-gray-800">
+            <h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2 flex justify-between items-center">📊 보유 종목 포트폴리오<span class="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">※ 헤더 클릭시 정렬</span></h3>
+            <div class="mb-6 flex justify-center border-b dark:border-gray-700 pb-6"><div class="w-full max-w-xs h-64 relative"><canvas id="stockPieChart"></canvas></div></div>
+            <div class="overflow-x-auto"><table class="w-full text-sm min-w-[700px]"><thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 border-b dark:border-gray-600"><tr><th class="p-2 text-left w-1/5 sortable" onclick="sortPortfolio('name')">종목명 <span id="sort-name"></span></th><th class="p-2 text-right">평단가 / 수량</th><th class="p-2 text-right">현재가 (검색)</th><th class="p-2 text-right">배당금(1주)</th><th class="p-2 text-right sortable" onclick="sortPortfolio('val')">평가금액 <span id="sort-val"></span></th><th class="p-2 text-right sortable" onclick="sortPortfolio('profit')">수익금(률) <span id="sort-profit">▼</span></th><th class="p-2 text-right sortable" onclick="sortPortfolio('div')">배당총액 <span id="sort-div"></span></th><th class="p-2 text-center">삭제</th></tr></thead><tbody id="portfolio-list" class="dark:text-gray-200"></tbody><tfoot class="bg-blue-50 dark:bg-gray-700 font-bold border-t dark:border-gray-600 dark:text-white"><tr><td class="p-3" colspan="4">총 합계 (예상 연 배당금)</td><td class="p-3 text-right" id="pf-total-val">0원</td><td class="p-3 text-right" id="pf-total-profit">0원</td><td class="p-3 text-right text-purple-600 dark:text-purple-400" id="pf-total-div">0원</td><td></td></tr></tfoot></table></div>
+            <div class="mt-4 flex gap-2 items-center bg-gray-50 dark:bg-gray-700 p-2 rounded-lg border border-gray-200 dark:border-gray-600 overflow-x-auto"><input type="text" id="pf-name" placeholder="종목명" class="min-w-[100px] flex-1 dark:bg-gray-600 dark:border-gray-500 dark:text-white"><input type="number" id="pf-avg" placeholder="평단가" class="w-20 dark:bg-gray-600 dark:border-gray-500 dark:text-white"><input type="number" id="pf-qty" placeholder="수량" class="w-16 dark:bg-gray-600 dark:border-gray-500 dark:text-white"><input type="number" id="pf-dps" placeholder="배당금" class="w-20 dark:bg-gray-600 dark:border-gray-500 dark:text-white"><button onclick="addPortfolioItem()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-indigo-700 whitespace-nowrap">+ 추가</button></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card bg-white dark:bg-gray-800 h-fit md:col-span-1"><h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2">✏️ 매매 일지 기록</h3><div class="space-y-3"><div><label class="text-xs text-gray-500 dark:text-gray-400 font-bold">날짜</label><input type="date" id="j-date" class="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div><div><label class="text-xs text-gray-500 dark:text-gray-400 font-bold">종목명</label><input type="text" id="j-name" class="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="종목명"></div><div class="flex gap-2"><div class="w-1/2"><label class="text-xs text-gray-500 dark:text-gray-400 font-bold">구분</label><select id="j-type" class="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"><option value="buy" class="text-red-600">🔴 매수</option><option value="sell" class="text-blue-600">🔵 매도</option><option value="hold">⚪️ 관망</option></select></div><div class="w-1/2"><label class="text-xs text-gray-500 dark:text-gray-400 font-bold">수량/가격</label><div class="flex gap-1"><input type="number" id="j-qty" class="w-1/2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="주"><input type="number" id="j-price" class="w-1/2 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="가"></div></div></div><div><label class="text-xs text-gray-500 dark:text-gray-400 font-bold">메모</label><textarea id="j-note" class="w-full h-20 resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="매매 이유/감정"></textarea></div><button onclick="addJournal()" class="w-full bg-gray-700 dark:bg-gray-600 text-white py-2 rounded-lg font-bold hover:bg-gray-800">일지 저장</button></div></div>
+            <div class="card bg-white dark:bg-gray-800 md:col-span-2 flex flex-col h-[600px]"><h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2">📋 매매 기록 리스트</h3><div class="flex-1 overflow-y-auto custom-scroll pr-2"><table class="w-full text-sm text-left"><thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 sticky top-0"><tr><th class="p-2">날짜/종목</th><th class="p-2">구분</th><th class="p-2 text-right">단가</th><th class="p-2">메모</th><th class="p-2 text-center">삭제</th></tr></thead><tbody id="journal-list" class="dark:text-gray-200"></tbody></table><div id="empty-msg" class="text-center text-gray-400 py-10 hidden">기록이 없습니다.</div></div></div>
+        </div>
+    </div>
+
+    <!-- [PAGE 4] 미래 설계 (NEW: 이름 변경 & 안전 로직) -->
+    <div id="page-future" class="max-w-6xl mx-auto p-4 space-y-6 hidden">
+        <div class="card bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-none shadow-xl text-center py-8">
+            <h2 class="text-2xl font-bold mb-2">🐉 금융 다마고치</h2><p class="text-purple-100 text-sm mb-6">자산이 늘어나면 펫이 진화합니다!</p>
+            <div onclick="petTalk()" class="pet-anim text-8xl mb-4 transition-transform hover:scale-110" id="pet-icon">🥚</div>
+            <div class="bg-white/20 backdrop-blur-md rounded-lg p-3 inline-block max-w-sm"><p id="pet-message" class="text-sm font-medium">"아직은 알이에요. 열심히 모아주세요!"</p></div>
+            <div class="mt-6 flex justify-center gap-2 text-xs opacity-70"><span>🥚 알 (0%)</span><span>→</span><span>🐣 아기 (20%)</span><span>→</span><span>🐥 어린이 (40%)</span><span>→</span><span>🦉 학생 (60%)</span><span>→</span><span>🦅 독수리 (80%)</span><span>→</span><span>🐉 드래곤 (100%)</span></div>
+        </div>
+
+        <div class="card bg-white dark:bg-gray-800">
+            <h3 class="font-bold text-lg mb-4 border-b dark:border-gray-700 pb-2 text-indigo-800 dark:text-indigo-200 flex justify-between items-center">🗺️ 연도별 자산 로드맵<span class="text-xs font-normal text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">연도를 클릭하세요</span></h3>
+            
+            <!-- 연도 선택 탭 (업데이트) -->
+            <div class="flex gap-2 overflow-x-auto mb-6 pb-2 custom-scroll" id="yearly-tabs"><!-- JS로 생성됨 --></div>
+
+            <!-- 상세 분석 화면 -->
+            <div id="yearly-detail-view" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 text-center border dark:border-gray-600">
+                <h4 class="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-2" id="yd-title">2026 (1년차) 목표</h4>
+                <div class="flex flex-col items-center justify-center gap-4 mb-6">
+                    <div class="flex items-center gap-2 justify-center">
+                        <span class="text-gray-500 dark:text-gray-300 text-sm">목표 금액:</span>
+                        <!-- ID 충돌 방지를 위해 future_ 접두사 사용 -->
+                        <input type="number" id="future_yd-input" oninput="saveFutureGoals()" class="text-xl font-bold text-right w-32 border-b-2 border-indigo-300 dark:border-indigo-500 bg-transparent focus:outline-none dark:text-white" placeholder="0">
+                        <span class="text-gray-500 dark:text-gray-300">만원</span>
+                    </div>
+                    <div class="w-full max-w-md">
+                        <div class="flex justify-between text-xs mb-1 text-gray-500 dark:text-gray-400"><span>현재 자산 달성률</span><span id="yd-percent">0%</span></div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-600 h-4 rounded-full overflow-hidden"><div id="yd-bar" class="h-full bg-indigo-500 transition-all duration-700" style="width: 0%"></div></div>
                     </div>
                 </div>
-
-                <!-- 1. 자산 성장 추이 그래프 -->
-                <div class="card">
-                    <h3 class="text-lg font-bold mb-4 border-b pb-2">📈 자산 성장 추이 (기존+신규)</h3>
-                    <div class="h-48 flex justify-center items-center">
-                        <canvas id="growthChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- 2. 저축률 차트 -->
-                <div class="card relative">
-                    <h3 class="text-lg font-bold mb-4 border-b pb-2">💰 이번 프로젝트 저축률</h3>
-                    <div class="h-48 flex justify-center items-center relative">
-                        <canvas id="mainSavingsChart"></canvas>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span class="text-xs text-gray-400">저축률</span>
-                            <span class="text-2xl font-bold text-blue-600" id="mainSavingsText">0%</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-center text-gray-400 mt-2">* (프로젝트 저축액 / 프로젝트 수입) 기준</p>
-                </div>
-
-                <!-- 3. 포트폴리오 차트 -->
-                <div class="card">
-                    <h3 class="text-lg font-bold mb-4 border-b pb-2">📊 신규 투자 포트폴리오</h3>
-                    <div class="h-48 flex justify-center items-center"><canvas id="portfolioChart"></canvas></div>
-                </div>
-
-                <!-- 4. 생활비 -->
-                <div class="card">
-                    <div class="flex justify-between items-center mb-4 border-b pb-2">
-                        <h3 class="text-lg font-bold">🛒 생활비 지출</h3>
-                        <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">예산: 15~20만</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="bg-gray-50 p-2 rounded text-center"><p class="text-xs text-gray-500">총 지출</p><p class="font-bold text-gray-700" id="totalExpense">0원</p></div>
-                        <div class="bg-gray-50 p-2 rounded text-center"><p class="text-xs text-gray-500">월 평균</p><p class="font-bold text-gray-700" id="avgExpense">0원</p></div>
-                    </div>
-                    <div class="space-y-2 max-h-80 overflow-y-auto pr-1 custom-scroll" id="expense-container"></div>
+                <div class="grid grid-cols-2 gap-4 text-left max-w-md mx-auto">
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border dark:border-gray-600"><p class="text-xs text-gray-400">남은 금액 (Gap)</p><p class="text-lg font-bold text-red-500" id="yd-gap">0만원</p></div>
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border dark:border-gray-600"><p class="text-xs text-gray-400">상태 메시지</p><p class="text-sm font-bold text-blue-600 dark:text-blue-400" id="yd-msg">입력 대기중...</p></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- [PAGE 2] 준비 기간 (유지) -->
-    <div id="page-pre" class="max-w-6xl mx-auto p-4 space-y-6 hidden">
-        <div class="card bg-indigo-600 text-white border-none shadow-xl">
-            <h2 class="text-2xl font-bold">🌱 프로젝트 준비 기간 (프리 시즌)</h2>
-            <p class="text-indigo-100 text-sm mt-1">본격 시작 전, 종잣돈 확보 및 지출 구조조정</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="pre-container"></div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="card bg-indigo-50 border border-indigo-200 flex flex-col justify-center">
-                <div class="mb-6 border-b border-indigo-200 pb-4">
-                    <span class="font-bold text-gray-500 text-sm mb-1 block">📅 준비 기간 총 수입 (월급+수당)</span>
-                    <span class="text-3xl font-bold text-gray-800" id="pre-total-income-sum">0원</span>
-                </div>
-                <div>
-                    <span class="font-bold text-gray-500 text-sm mb-1 block">💰 준비 기간 총 저축액</span>
-                    <span class="text-3xl font-bold text-indigo-700" id="pre-total-save-sum">0원</span>
-                </div>
-            </div>
-            <div class="card relative flex flex-col items-center justify-center">
-                <h3 class="text-sm font-bold text-gray-500 mb-2 w-full text-left">📈 프리 시즌 저축 성적표</h3>
-                <div class="h-40 w-full flex justify-center items-center relative">
-                    <canvas id="preSavingsChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-xs text-gray-400">저축률</span>
-                        <span class="text-xl font-bold text-indigo-600" id="preSavingsText">0%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- 하단 -->
+    <div class="text-center mt-12 mb-8 text-xs text-gray-400 dark:text-gray-600 space-y-4">
+        <div class="flex justify-center"><button onclick="openFortuneCookie()" class="fortune-btn bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 px-4 py-2 rounded-full shadow-sm text-yellow-800 dark:text-yellow-200 font-bold flex items-center gap-2">🥠 오늘의 금융 포춘쿠키 열기</button></div>
+        <div id="fortune-msg" class="hidden text-sm font-bold text-blue-600 dark:text-blue-400 fortune-text"></div>
+        <p>⚠️ 브라우저 캐시 삭제 시 데이터가 사라질 수 있습니다. 주기적으로 백업하세요.</p>
+        <div class="flex justify-center gap-4"><button onclick="downloadBackup()" class="flex items-center gap-1 hover:text-blue-500 transition">💾 데이터 백업</button><label class="flex items-center gap-1 hover:text-green-500 transition cursor-pointer">📂 데이터 복구<input type="file" class="hidden" accept=".json" onchange="restoreBackup(this)"></label></div>
+        <p class="opacity-50">Designed for 2026 Financial Freedom</p>
     </div>
 
     <script>
         // --- 전역 설정 ---
-        let myChart = null; 
-        let mainSavingsChart = null;
-        let growthChart = null;
-        let preSavingsChart = null;
-
-        const months = ["26.04", "26.05", "26.06", "26.07", "26.08", "26.09", "26.10", "26.11", "26.12", "27.01", "27.02", "27.03"];
-        const preMonths = ["25.12", "26.01", "26.02", "26.03"];
-
-        const defaultPlan = { snp: 130, nasdaq: 20, gold: 10, house: 25, irp: 10, savings: 5 };
-        const fieldConfig = [
-            { key: 'snp', label: '🇺🇸 S&P500', color: '#3b82f6' },
-            { key: 'nasdaq', label: '💻 나스닥', color: '#8b5cf6' },
-            { key: 'gold', label: '🥇 금 현물', color: '#eab308' },
-            { key: 'house', label: '🏠 주택청약', color: '#10b981' },
-            { key: 'irp', label: '🛡️ IRP', color: '#6366f1' },
-            { key: 'savings', label: '🐷 적금', color: '#9ca3af' }
+        let myChart=null, mainSavingsChart=null, growthChart=null, preSavingsChart=null, stockPieChart=null;
+        const months=["26.04","26.05","26.06","26.07","26.08","26.09","26.10","26.11","26.12","27.01","27.02","27.03"];
+        const preMonths=["25.12","26.01","26.02","26.03"];
+        const defaultFieldConfig=[{key:'snp',label:'🇺🇸 S&P500',color:'#3b82f6'},{key:'nasdaq',label:'💻 나스닥',color:'#8b5cf6'},{key:'gold',label:'🥇 금 현물',color:'#eab308'},{key:'house',label:'🏠 주택청약',color:'#10b981'},{key:'irp',label:'🛡️ IRP',color:'#6366f1'},{key:'savings',label:'🐷 적금',color:'#9ca3af'}];
+        let currentFieldConfig=[], preDataStore={}, journalData=[], portfolioData=[], currentSort={key:'profit',order:'desc'};
+        let achievedMilestones = new Set();
+        
+        // 연도 데이터 (수정됨)
+        const roadmapData = [
+            { year: 2025, label: "2025 (준비)" },
+            { year: 2026, label: "2026 (1년차)" },
+            { year: 2027, label: "2027 (2년차)" },
+            { year: 2028, label: "2028 (3년차)" },
+            { year: 2029, label: "2029 (4년차)" },
+            { year: 2030, label: "2030 (5년차)" }
         ];
+        let selectedYear = 2026;
+        let futureGoals = {}; // 4쪽 전용 데이터
 
-        let preDataStore = {};
+        // 다크모드
+        function loadTheme(){ const t=localStorage.getItem('theme'); if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');updateThemeIcon(true);}else{document.documentElement.classList.remove('dark');updateThemeIcon(false);} }
+        function toggleTheme(){ const isDark=document.documentElement.classList.toggle('dark'); localStorage.setItem('theme',isDark?'dark':'light'); updateThemeIcon(isDark); updateChartsTheme(isDark); }
+        function updateThemeIcon(isDark){ const i=isDark?'☀️':'🌙'; document.getElementById('theme-icon-pc').innerText=i; document.getElementById('theme-icon-m').innerText=i; }
+        function updateChartsTheme(isDark){ const tc=isDark?'#e5e7eb':'#374151', gc=isDark?'#374151':'#e5e7eb'; Chart.defaults.color=tc; Chart.defaults.borderColor=gc; [myChart,mainSavingsChart,growthChart,preSavingsChart,stockPieChart].forEach(c=>{if(c)c.update();}); }
 
-        window.onload = function() { initApp(); };
+        window.onload=function(){ loadTheme(); initApp(); setTimeout(()=>updateChartsTheme(document.documentElement.classList.contains('dark')),100); };
 
-        function switchPage(pageName) {
-            const mainPage = document.getElementById('page-main');
-            const prePage = document.getElementById('page-pre');
-            const mainBtn = document.getElementById('tab-main');
-            const preBtn = document.getElementById('tab-pre');
-
-            if (pageName === 'main') {
-                mainPage.classList.remove('hidden');
-                prePage.classList.add('hidden');
-                mainBtn.className = "tab-btn active text-sm";
-                preBtn.className = "tab-btn inactive text-sm";
-            } else {
-                mainPage.classList.add('hidden');
-                prePage.classList.remove('hidden');
-                mainBtn.className = "tab-btn inactive text-sm";
-                preBtn.className = "tab-btn active text-sm";
-            }
+        function switchPage(pageName){
+            ['main','pre','journal','future'].forEach(p=>{document.getElementById(`page-${p}`).classList.add('hidden');document.getElementById(`tab-${p}`).className="tab-btn inactive text-sm bg-transparent text-blue-200 dark:text-gray-400 hover:text-white";});
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+            document.getElementById(`tab-${pageName}`).className="tab-btn active text-sm bg-white text-blue-600 shadow-md";
         }
 
-        function initApp() {
-            // [Page 1]
-            initializeData();
-            loadBaseAsset(); // 기존 자산 로드
-            renderMonthNav();
-            renderInvestmentCards();
-            renderIncomeCards();
-            renderExpenseTracker();
-            loadInvestmentData();
-            loadIncomeData();
-            loadExpenseData();
-            calculateTotalAndChart(); 
-            calculateTotalIncome();   
-            selectMonth(months[0]);
+        function initApp(){
+            try {
+                // 1, 2, 3쪽 초기화 (우선 실행)
+                loadFieldConfig(); initializeData(); loadSeedData(); renderMonthNav(); renderInvestmentCards(); renderIncomeCards(); renderExpenseTracker(); loadInvestmentData(); loadIncomeData(); loadExpenseData(); calculateTotalAndChart(); calculateTotalIncome(); selectMonth(months[0]);
+                initPreData(); renderPreCards(); updatePreCards();
+                initJournal(); initPortfolio();
+            } catch (e) { console.error("Page 1-3 Init Error:", e); }
 
-            // [Page 2]
-            initPreData();
-            renderPreCards();
-            updatePreCards(); 
+            // 4쪽 초기화 (안전하게 분리 실행)
+            try {
+                initFuturePage();
+            } catch (e) { console.error("Page 4 Init Error:", e); }
         }
 
-        // ==========================================
-        // [PAGE 1] 로직
-        // ==========================================
-        function initializeData() { if (!localStorage.getItem('project2026_data_v12')) { const initialData = {}; months.forEach(m => initialData[m] = { ...defaultPlan }); localStorage.setItem('project2026_data_v12', JSON.stringify(initialData)); } }
-        function renderMonthNav() { document.getElementById('month-nav').innerHTML = months.map(m => `<button onclick="selectMonth('${m}')" id="btn-${m}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all border border-gray-200 bg-white text-gray-500 whitespace-nowrap">${m}</button>`).join(''); }
-        function renderInvestmentCards() { document.getElementById('monthly-container').innerHTML = months.map(month => { const inputs = fieldConfig.map(f => `<div class="flex items-center justify-between mb-2 input-group"><label class="text-gray-600 text-sm w-1/2">${f.label}</label><div class="w-1/2"><input type="number" data-month="${month}" data-key="${f.key}" oninput="saveAndCalc()" class="bg-gray-50 w-full"></div></div>`).join(''); return `<div class="card month-card hidden" id="card-${month}"><div class="flex justify-between items-center mb-4 pb-2 border-b"><div class="flex flex-col"><span class="text-xs text-gray-500">STEP 1</span><h4 class="text-xl font-bold text-gray-800">투자 실행</h4></div><label class="flex items-center space-x-2 cursor-pointer bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200"><input type="checkbox" id="check-${month}" onchange="toggleDone('${month}')" class="w-4 h-4 text-blue-600 rounded"><span class="text-sm font-bold text-gray-600">완료</span></label></div><div class="space-y-1">${inputs}</div><div class="mt-4 pt-2 border-t flex justify-between items-center"><span class="text-xs font-bold text-gray-500">투자 합계</span><span class="font-bold text-blue-600" id="sum-${month}">0만원</span></div></div>`; }).join(''); }
-        function renderIncomeCards() { document.getElementById('income-container').innerHTML = months.map(month => `<div class="card hidden border-l-4 border-blue-400" id="income-${month}"><div class="flex justify-between items-center mb-3"><div class="flex flex-col"><span class="text-xs text-gray-500">STEP 2</span><h4 class="text-lg font-bold text-gray-800">월급 & 수당 기록</h4></div></div><div class="space-y-3"><div><label class="text-xs text-gray-500 mb-1 block">💰 월급(본봉)</label><input type="number" id="salary-${month}" placeholder="0" oninput="saveIncome()" class="income-input w-full"></div><div><label class="text-xs text-gray-500 mb-1 block">🎁 수당(성과급/명절/정근)</label><input type="number" id="bonus-${month}" placeholder="0" oninput="saveIncome()" class="income-input w-full"></div></div><div class="mt-3 pt-2 border-t border-blue-100 flex justify-between items-center"><span class="text-xs font-bold text-gray-500">총 수입</span><span class="font-bold text-gray-700" id="income-total-${month}">0만원</span></div></div>`).join(''); }
-        function renderExpenseTracker() { document.getElementById('expense-container').innerHTML = months.map(month => `<div class="flex items-center justify-between py-1"><span class="text-sm font-bold text-gray-500 w-16">${month}</span><div class="flex-1 relative"><input type="number" id="exp-${month}" placeholder="0" oninput="saveExpense()" class="w-full pr-8"><span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span></div></div>`).join(''); }
-        
-        // 기존 자산 관련 로직 (NEW)
-        function loadBaseAsset() {
-            const base = localStorage.getItem('project2026_base');
-            if (base) document.getElementById('base-asset').value = base;
-        }
-        function saveBaseAsset() {
-            localStorage.setItem('project2026_base', document.getElementById('base-asset').value);
-            calculateTotalAndChart();
+        // --- PAGE 4: FUTURE (독립 로직) ---
+        function initFuturePage() {
+            // 데이터 로드
+            const s = localStorage.getItem('project2026_future_goals');
+            if(s) futureGoals = JSON.parse(s);
+            else futureGoals = {};
+
+            initPet();
+            renderYearlyTabs();
+            updateYearlyDetailUI();
         }
 
-        function saveAndCalc() { const dataObj = {}; document.querySelectorAll('#monthly-container input[type="number"]').forEach(input => { const m = input.dataset.month, k = input.dataset.key; if (!dataObj[m]) dataObj[m] = {}; dataObj[m][k] = Number(input.value); }); localStorage.setItem('project2026_data_v12', JSON.stringify(dataObj)); calculateTotalAndChart(); }
-        
-        function calculateTotalAndChart() { 
-            const baseAsset = Number(document.getElementById('base-asset').value) || 0;
-            let grandTotal = baseAsset; // 기존 자산에서 시작
-            let projectTotal = 0; // 순수 프로젝트 저축액 (저축률 계산용)
+        function renderYearlyTabs() {
+            const container = document.getElementById('yearly-tabs');
+            if(!container) return;
+            container.innerHTML = roadmapData.map(d => `
+                <button onclick="selectYear(${d.year})" id="y-tab-${d.year}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 whitespace-nowrap transition-all">
+                    ${d.label}
+                </button>
+            `).join('');
+            selectYear(selectedYear);
+        }
 
-            let chartData = { snp: 0, nasdaq: 0, gold: 0, house: 0, irp: 0, savings: 0 }; 
-            let growthDataPoints = [];
-            let runningTotal = baseAsset;
-
-            months.forEach(month => { 
-                const inputs = document.querySelectorAll(`input[data-month="${month}"]`); 
-                let monthSum = 0; 
-                inputs.forEach(input => { 
-                    const val = Number(input.value); 
-                    monthSum += val; 
-                    if (document.getElementById(`check-${month}`).checked) chartData[input.dataset.key] += val; 
-                }); 
-                document.getElementById(`sum-${month}`).innerText = monthSum.toLocaleString() + "만원"; 
-                
-                if (document.getElementById(`check-${month}`).checked) {
-                    grandTotal += monthSum;
-                    projectTotal += monthSum;
-                    runningTotal += monthSum;
+        function selectYear(year) {
+            selectedYear = year;
+            roadmapData.forEach(d => {
+                const btn = document.getElementById(`y-tab-${d.year}`);
+                if(btn) {
+                    if(d.year === year) btn.className = "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-indigo-600 text-white transform scale-105 whitespace-nowrap transition-all";
+                    else btn.className = "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 whitespace-nowrap transition-all";
                 }
-                
-                growthDataPoints.push(runningTotal);
-            }); 
-            
-            document.getElementById('totalAsset').innerText = (grandTotal * 10000).toLocaleString() + "원"; 
-            
-            // 달성률은 순수 프로젝트 목표(2400) 기준
-            const percent = Math.min((projectTotal / 2400) * 100, 100).toFixed(1); 
-            document.getElementById('progress-bar').style.width = percent + "%"; 
-            document.getElementById('progress-text').innerText = percent + "%"; 
-            
-            updateChart(chartData);
-            updateMainSavingsChart(projectTotal); // 저축률 계산엔 순수 프로젝트 저축액 사용
-            updateGrowthChart(growthDataPoints); 
+            });
+            updateYearlyDetailUI();
         }
 
-        function updateChart(data) { const ctx = document.getElementById('portfolioChart').getContext('2d'); const dataset = [data.snp, data.nasdaq, data.gold, data.house, data.irp, data.savings]; if (myChart) { myChart.data.datasets[0].data = dataset; myChart.update(); } else { myChart = new Chart(ctx, { type: 'doughnut', data: { labels: fieldConfig.map(f => f.label), datasets: [{ data: dataset, backgroundColor: fieldConfig.map(f => f.color), borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } }); } }
-        
-        function updateGrowthChart(dataPoints) {
-            const ctx = document.getElementById('growthChart').getContext('2d');
-            if (growthChart) {
-                growthChart.data.datasets[0].data = dataPoints;
-                growthChart.update();
+        function saveFutureGoals() {
+            const val = document.getElementById('future_yd-input').value;
+            futureGoals[selectedYear] = val ? Number(val) : 0;
+            localStorage.setItem('project2026_future_goals', JSON.stringify(futureGoals));
+            updateYearlyDetailUI();
+        }
+
+        function updateYearlyDetailUI() {
+            // 현재 자산 가져오기 (안전하게)
+            let currentAsset = 0;
+            const t = document.getElementById('totalAsset');
+            if(t) currentAsset = parseInt(t.innerText.replace(/[^0-9]/g,""))/10000;
+
+            const target = futureGoals[selectedYear] || 0;
+            const labelObj = roadmapData.find(d => d.year === selectedYear);
+            
+            const titleEl = document.getElementById('yd-title');
+            const inputEl = document.getElementById('future_yd-input'); // ID 주의
+            const bar = document.getElementById('yd-bar');
+            const percentEl = document.getElementById('yd-percent');
+            const gapEl = document.getElementById('yd-gap');
+            const msgEl = document.getElementById('yd-msg');
+
+            if(titleEl) titleEl.innerText = labelObj ? labelObj.label + " 목표" : selectedYear + "년 목표";
+            if(inputEl) inputEl.value = target || '';
+
+            if(target > 0) {
+                const pct = Math.min((currentAsset / target) * 100, 100);
+                if(bar) bar.style.width = pct + "%";
+                if(percentEl) percentEl.innerText = pct.toFixed(1) + "%";
+
+                if(currentAsset >= target) {
+                    if(bar) bar.className = "h-full bg-green-500 transition-all duration-700";
+                    if(gapEl) { gapEl.innerText = `+${(currentAsset - target).toLocaleString()}만`; gapEl.className = "text-lg font-bold text-green-500"; }
+                    if(msgEl) { msgEl.innerText = "달성 완료! 🏆"; msgEl.className = "text-sm font-bold text-green-600"; }
+                } else {
+                    if(bar) bar.className = "h-full bg-indigo-500 transition-all duration-700";
+                    if(gapEl) { gapEl.innerText = `-${(target - currentAsset).toLocaleString()}만`; gapEl.className = "text-lg font-bold text-red-500"; }
+                    if(msgEl) { msgEl.innerText = "진행 중 🔥"; msgEl.className = "text-sm font-bold text-indigo-600 dark:text-indigo-400"; }
+                }
             } else {
-                growthChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: months,
-                        datasets: [{ label: '누적 자산', data: dataPoints, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderWidth: 2, tension: 0.3, fill: true, pointBackgroundColor: '#2563eb' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, grid: { borderDash: [2, 4] } }, x: { grid: { display: false } } } }
-                });
+                if(bar) bar.style.width = "0%";
+                if(percentEl) percentEl.innerText = "0%";
+                if(gapEl) { gapEl.innerText = "-"; gapEl.className = "text-lg font-bold text-gray-400"; }
+                if(msgEl) { msgEl.innerText = "목표를 설정하세요."; msgEl.className = "text-sm font-bold text-gray-400"; }
             }
+
+            // 펫 업데이트 (현재 자산 기준)
+            updatePetStatus(currentAsset, target); 
         }
 
-        function saveIncome() { const incomeData = {}; months.forEach(m => { const salary = Number(document.getElementById(`salary-${m}`).value); const bonus = Number(document.getElementById(`bonus-${m}`).value); incomeData[m] = { salary, bonus }; document.getElementById(`income-total-${m}`).innerText = (salary + bonus).toLocaleString() + "만원"; }); localStorage.setItem('project2026_income_v12', JSON.stringify(incomeData)); calculateTotalIncome(); }
-        
-        function calculateTotalIncome() { 
-            let totalInc = 0; 
-            months.forEach(m => { totalInc += (Number(document.getElementById(`salary-${m}`).value) + Number(document.getElementById(`bonus-${m}`).value)); }); 
-            document.getElementById('totalIncomeDisplay').innerText = (totalInc * 10000).toLocaleString() + "원"; 
+        function initPet() {
+            // 펫 초기화는 UI 업데이트 시 같이 수행됨
+        }
+        function updatePetStatus(projSave, goal) {
+            const petIcon = document.getElementById('pet-icon');
+            const petMsg = document.getElementById('pet-message');
+            if(!petIcon) return;
+            // goal이 0이면 전체 목표(2400) 기준으로 재미 삼아 보여줌
+            const baseGoal = goal > 0 ? goal : 2400; 
+            const ratio = projSave / baseGoal;
             
-            // 수입이 바뀌면 저축률도 다시 계산해야 하므로 호출
-            // 하지만 여기서 projectTotal을 알 수 없으므로 calculateTotalAndChart()를 호출하는게 안전
-            // 순환 호출 방지를 위해 로직 분리 필요하지만 간단히 그냥 둠.
+            let icon="🥚", msg="아직은 알이에요.";
+            if(ratio>=1.0) { icon="🐉"; msg="드래곤으로 진화! 목표 달성!"; }
+            else if(ratio>=0.8) { icon="🦅"; msg="독수리! 거의 다 왔어요."; }
+            else if(ratio>=0.6) { icon="🦉"; msg="부엉이! 지혜롭게 모으는 중."; }
+            else if(ratio>=0.4) { icon="🐥"; msg="병아리! 쑥쑥 크고 있어요."; }
+            else if(ratio>=0.2) { icon="🐣"; msg="알을 깨고 나왔어요!"; }
+            
+            petIcon.innerText = icon;
+            petMsg.innerText = `"${msg}"`;
+        }
+        function petTalk() {
+            const msgs = ["부자 되세요!", "복리의 마법!", "오늘도 화이팅!", "낭비 금지!", "가즈아~!"];
+            document.getElementById('pet-message').innerText = `"${msgs[Math.floor(Math.random()*msgs.length)]}"`;
         }
 
-        function updateMainSavingsChart(projectTotal) {
-            const totalIncomeStr = document.getElementById('totalIncomeDisplay').innerText;
-            const totalIncome = parseInt(totalIncomeStr.replace(/[^0-9]/g, "")) || 0;
-            // projectTotal은 만원 단위, totalIncome은 원 단위이므로 환산 필요
-            const projectTotalWon = projectTotal * 10000;
+        // --- 백업/복구 ---
+        function downloadBackup(){ const d={}; for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('project2026_')||k==='theme')d[k]=localStorage.getItem(k);} const b=new Blob([JSON.stringify(d)],{type:"application/json"}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`project2026_backup_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        function restoreBackup(i){ const f=i.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(e){try{const d=JSON.parse(e.target.result);for(const k in d)localStorage.setItem(k,d[k]);alert("복구 완료!");location.reload();}catch(err){alert("오류");}}; r.readAsText(f); }
 
-            let rate = 0; let expense = 0;
-            if (totalIncome > 0) {
-                rate = Math.min((projectTotalWon / totalIncome) * 100, 100).toFixed(1);
-                expense = totalIncome - projectTotalWon;
-                if(expense < 0) expense = 0;
-            }
-
-            document.getElementById('mainSavingsText').innerText = rate + "%";
-
-            const ctx = document.getElementById('mainSavingsChart').getContext('2d');
-            if (mainSavingsChart) {
-                mainSavingsChart.data.datasets[0].data = [projectTotalWon, expense];
-                mainSavingsChart.update();
-            } else {
-                mainSavingsChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['저축(자산)', '지출/기타'],
-                        datasets: [{ data: [projectTotalWon, expense], backgroundColor: ['#2563eb', '#e5e7eb'], borderWidth: 0, cutout: '75%' }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-                });
+        // --- PAGE 1 ---
+        function loadFieldConfig(){const s=localStorage.getItem('project2026_config_v13');currentFieldConfig=s?JSON.parse(s):JSON.parse(JSON.stringify(defaultFieldConfig));if(!s)localStorage.setItem('project2026_config_v13',JSON.stringify(currentFieldConfig));renderSettingsList();}
+        function toggleSettings(){document.getElementById('settings-panel').classList.toggle('hidden');}
+        function renderSettingsList(){document.getElementById('field-list').innerHTML=currentFieldConfig.map((item,i)=>`<li class="flex justify-between items-center bg-white dark:bg-gray-700 border dark:border-gray-600 p-2 rounded"><div class="flex items-center gap-2"><div class="w-4 h-4 rounded-full" style="background-color:${item.color}"></div><span>${item.label}</span></div><button onclick="deleteField(${i})" class="text-red-500 font-bold px-2">×</button></li>`).join('');}
+        function addNewField(){const name=document.getElementById('new-item-name').value.trim(),color=document.getElementById('new-item-color').value;if(!name)return alert("이름!");currentFieldConfig.push({key:'c_'+Date.now(),label:name,color});localStorage.setItem('project2026_config_v13',JSON.stringify(currentFieldConfig));document.getElementById('new-item-name').value="";renderSettingsList();renderInvestmentCards();loadInvestmentData();calculateTotalAndChart();}
+        function deleteField(i){if(!confirm("삭제?"))return;currentFieldConfig.splice(i,1);localStorage.setItem('project2026_config_v13',JSON.stringify(currentFieldConfig));renderSettingsList();renderInvestmentCards();loadInvestmentData();calculateTotalAndChart();}
+        function initializeData(){if(!localStorage.getItem('project2026_data_v13'))localStorage.setItem('project2026_data_v13',JSON.stringify({}));}
+        function renderMonthNav(){document.getElementById('month-nav').innerHTML=months.map(m=>`<button onclick="selectMonth('${m}')" id="btn-${m}" class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold transition-all border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 whitespace-nowrap">${m}</button>`).join('');}
+        function renderInvestmentCards(){document.getElementById('monthly-container').innerHTML=months.map(m=>{const inputs=currentFieldConfig.map(f=>`<div class="flex items-center justify-between mb-2 input-group"><label class="text-gray-600 dark:text-gray-400 text-sm w-1/2 flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background-color:${f.color}"></span>${f.label}</label><div class="w-1/2"><input type="number" data-month="${m}" data-key="${f.key}" oninput="saveAndCalc()" class="bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 w-full"></div></div>`).join('');return `<div class="card bg-white dark:bg-gray-800 month-card hidden" id="card-${m}"><div class="flex justify-between items-center mb-4 pb-2 border-b dark:border-gray-700"><div class="flex flex-col"><span class="text-xs text-gray-500 dark:text-gray-400">STEP 1</span><h4 class="text-xl font-bold text-gray-800 dark:text-white">투자 실행</h4></div><label class="flex items-center space-x-2 cursor-pointer bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"><input type="checkbox" id="check-${m}" onchange="toggleDone('${m}')" class="w-4 h-4 text-blue-600 rounded"><span class="text-sm font-bold text-gray-600 dark:text-gray-300">완료</span></label></div><div class="space-y-1">${inputs}</div><div class="mt-4 pt-2 border-t dark:border-gray-700 flex justify-between items-center"><span class="text-xs font-bold text-gray-500 dark:text-gray-400">합계</span><span class="font-bold text-blue-600 dark:text-blue-400" id="sum-${m}">0만원</span></div></div>`;}).join('');}
+        function renderIncomeCards(){document.getElementById('income-container').innerHTML=months.map(m=>`<div class="card bg-white dark:bg-gray-800 hidden border-l-4 border-blue-400" id="income-${m}"><div class="flex justify-between items-center mb-3"><div class="flex flex-col"><span class="text-xs text-gray-500 dark:text-gray-400">STEP 2</span><h4 class="text-lg font-bold text-gray-800 dark:text-white">수입 기록</h4></div></div><div class="space-y-3"><div><label class="text-xs text-gray-500 dark:text-gray-400 font-bold block">💰 월급</label><input type="number" id="salary-${m}" placeholder="0" oninput="saveIncome()" class="income-input w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div><div><label class="text-xs text-gray-500 dark:text-gray-400 font-bold block">🎁 수당</label><input type="number" id="bonus-${m}" placeholder="0" oninput="saveIncome()" class="income-input w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div></div><div class="mt-3 pt-2 border-t dark:border-gray-700 border-blue-100 flex justify-between items-center"><span class="text-xs font-bold text-gray-500 dark:text-gray-400">총 수입</span><span class="font-bold text-gray-700 dark:text-white" id="income-total-${m}">0만원</span></div></div>`).join('');}
+        function renderExpenseTracker(){document.getElementById('expense-container').innerHTML=months.map(m=>`<div class="flex items-center justify-between py-1"><span class="text-sm font-bold text-gray-500 dark:text-gray-400 w-16">${m}</span><div class="flex-1 relative"><input type="number" id="exp-${m}" placeholder="0" oninput="saveExpense()" class="w-full pr-8 dark:bg-gray-700 dark:border-gray-600 dark:text-white"><span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs pointer-events-none">원</span></div></div>`).join('');}
+        function loadSeedData(){const s=JSON.parse(localStorage.getItem('project2026_seed_v17'))||{deposit:0,savings:0,house:0,bond:0};document.getElementById('seed-deposit').value=s.deposit||'';document.getElementById('seed-savings').value=s.savings||'';document.getElementById('seed-house').value=s.house||'';document.getElementById('seed-bond').value=s.bond||'';}
+        function saveSeedData(){const s={deposit:Number(document.getElementById('seed-deposit').value),savings:Number(document.getElementById('seed-savings').value),house:Number(document.getElementById('seed-house').value),bond:Number(document.getElementById('seed-bond').value)};localStorage.setItem('project2026_seed_v17',JSON.stringify(s));calculateTotalAndChart();if(!document.getElementById('page-future').classList.contains('hidden')) updateYearlyDetailUI();}
+        function getDetailedSeedTotal(){const d=Number(document.getElementById('seed-deposit').value)||0,s=Number(document.getElementById('seed-savings').value)||0,h=Number(document.getElementById('seed-house').value)||0,b=Number(document.getElementById('seed-bond').value)||0,st=Number(document.getElementById('seed-stock').value)||0;const t=d+s+h+b+st;document.getElementById('seed-total-display').innerText=t.toLocaleString()+"만원";return t;}
+        function saveAndCalc(){const d={};document.querySelectorAll('#monthly-container input[type="number"]').forEach(i=>{const m=i.dataset.month,k=i.dataset.key;if(!d[m])d[m]={};d[m][k]=Number(i.value);});localStorage.setItem('project2026_data_v13',JSON.stringify(d));calculateTotalAndChart();if(!document.getElementById('page-future').classList.contains('hidden')) updateYearlyDetailUI();}
+        function calculateTotalAndChart(){const b=getDetailedSeedTotal();let t=Number(document.getElementById('target-goal').value)||2400;localStorage.setItem('project2026_target_goal',t);let g=b,p=0,c={};currentFieldConfig.forEach(f=>c[f.key]=0);let gr=[],run=b;let avgP=0,cnt=0;
+            months.forEach(m=>{
+                const i=document.querySelectorAll(`input[data-month="${m}"]`);let s=0;
+                i.forEach(inp=>{const v=Number(inp.value);s+=v;if(document.getElementById(`check-${m}`).checked){const k=inp.dataset.key;if(c[k]!==undefined)c[k]+=v;}});
+                document.getElementById(`sum-${m}`).innerText=s.toLocaleString()+"만원";
+                if(document.getElementById(`check-${m}`).checked){g+=s;p+=s;run+=s;}else{avgP+=s;cnt++;}gr.push(run);
+            });
+            document.getElementById('totalAsset').innerText=(g*10000).toLocaleString()+"원";
+            const pct=Math.min((p/t)*100,100).toFixed(1);document.getElementById('progress-bar').style.width=pct+"%";document.getElementById('progress-text').innerText=pct+"%";updateChart(c);updateMainSavingsChart(p);updateGrowthChart(gr);
+            updateLevelBadge(g); renderMilestones(t, 'milestones-container', g); checkMilestoneReached(g, 'main', t);
+            
+            // Prediction
+            const td=localStorage.getItem('project2026_target_date'); if(td)document.getElementById('target-deadline').value=td;
+            const targetDateStr=document.getElementById('target-deadline').value; if(targetDateStr) localStorage.setItem('project2026_target_date', targetDateStr);
+            const dDayEl = document.getElementById('d-day-badge');
+            if(targetDateStr) {
+                const today = new Date(); today.setHours(0,0,0,0); const tDate = new Date(targetDateStr + "-01");
+                const diff = Math.ceil((tDate - today) / (1000 * 60 * 60 * 24));
+                dDayEl.innerText = diff > 0 ? `D-${diff}` : (diff === 0 ? "D-Day" : `D+${Math.abs(diff)}`); dDayEl.classList.remove('hidden');
+            } else { dDayEl.classList.add('hidden'); }
+            const remaining = (t - g)*10000; const speed = (months.length > 0) ? (avgP / Math.max(cnt,1)) * 10000 : 0;
+            const predEl = document.getElementById('prediction-date'); const diffEl = document.getElementById('prediction-diff');
+            if(remaining <= 0) { predEl.innerText = "목표 달성! 🎉"; predEl.className="font-bold text-green-400"; diffEl.innerText=""; }
+            else if(speed <= 0) { predEl.innerText = "데이터 부족"; predEl.className="font-bold text-gray-400"; diffEl.innerText=""; }
+            else {
+                const monthsNeeded = Math.ceil(remaining / speed); const today = new Date(); const predDate = new Date(today.getFullYear(), today.getMonth() + monthsNeeded, 1);
+                predEl.innerText = `${predDate.getFullYear()}년 ${predDate.getMonth()+1}월`; predEl.className="font-bold text-white";
+                if(targetDateStr) {
+                    const targetD = new Date(targetDateStr); const diffMonths = (targetD.getFullYear() - predDate.getFullYear()) * 12 + (targetD.getMonth() - predDate.getMonth());
+                    if(diffMonths > 0) { diffEl.innerText = `+${diffMonths}개월 단축! 🚀`; diffEl.className="text-xs text-green-400 font-bold"; }
+                    else if(diffMonths < 0) { diffEl.innerText = `${diffMonths}개월 지연... 🐢`; diffEl.className="text-xs text-red-400 font-bold"; }
+                    else { diffEl.innerText = "일정 완벽! 👌"; diffEl.className="text-xs text-blue-300 font-bold"; }
+                } else { diffEl.innerText = "목표 기한 미설정"; diffEl.className="text-xs text-gray-400"; }
             }
         }
+        function updateLevelBadge(currentAsset) {
+            const badge = document.getElementById('level-badge'); const nextGap = document.getElementById('next-level-gap');
+            let level="🌱 씨앗", nextLevel=500, colorClass="bg-green-100 text-green-800";
+            if(currentAsset >= 5000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
+            else if(currentAsset >= 3000) { level="💎 다이아몬드"; nextLevel=5000; colorClass="bg-blue-100 text-blue-800"; }
+            else if(currentAsset >= 2000) { level="🥇 골드"; nextLevel=3000; colorClass="bg-yellow-100 text-yellow-800"; }
+            else if(currentAsset >= 1000) { level="🥈 실버"; nextLevel=2000; colorClass="bg-gray-200 text-gray-800"; }
+            else if(currentAsset >= 500) { level="🥉 브론즈"; nextLevel=1000; colorClass="bg-orange-100 text-orange-800"; }
+            badge.innerText = level; badge.className = `px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border border-white/30 ${colorClass}`;
+            const prevLevel = localStorage.getItem('project2026_level');
+            if(prevLevel && prevLevel !== level) { badge.classList.add('level-up-anim'); triggerConfetti(); setTimeout(()=>badge.classList.remove('level-up-anim'), 1000); }
+            localStorage.setItem('project2026_level', level);
+            nextGap.innerText = nextLevel > 0 ? `다음 레벨까지 ${(nextLevel - currentAsset).toLocaleString()}만` : "최고 레벨 달성!";
+        }
+        function renderMilestones(goal, containerId, current) {
+            const container = document.getElementById(containerId); if(!container || goal <= 0) return; container.innerHTML = ""; const step = 1000;
+            for(let m = step; m < goal; m += step) {
+                const pos = (m / goal) * 100; const achieved = current >= m;
+                const color = achieved ? "#4ade80" : "#ffffff"; const opacity = achieved ? "1" : "0.5"; const animation = achieved ? "milestone-achieved" : "";
+                const marker = document.createElement("div"); marker.className = `milestone-marker absolute bottom-0 flex flex-col items-center pointer-events-none ${animation}`; marker.style.left = pos + "%";
+                marker.innerHTML = `<div class="milestone-flag text-[10px] mb-0.5" style="color:${color}; opacity:${opacity}">🚩</div><div class="milestone-line w-px h-1.5 bg-white bg-opacity-30"></div>`;
+                container.appendChild(marker);
+            }
+        }
+        function checkMilestoneReached(current, page, goal) {
+            const step = 1000; const currentLevel = Math.floor(current / step) * step;
+            if(current >= goal && goal > 0) { const key = `${page}_goal_${goal}`; if(!achievedMilestones.has(key)) { triggerFinale(); achievedMilestones.add(key); } return; }
+            if (currentLevel > 0) { const key = `${page}_${currentLevel}`; if(!achievedMilestones.has(key)) { triggerConfetti(); achievedMilestones.add(key); } }
+        }
+        function triggerConfetti() { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#10b981', '#f59e0b'] }); }
+        function triggerFinale() { var duration = 3 * 1000; var end = Date.now() + duration; (function frame() { confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#3b82f6', '#10b981'] }); confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#f59e0b', '#ec4899'] }); if (Date.now() < end) requestAnimationFrame(frame); }()); }
 
-        function loadIncomeData() { const saved = JSON.parse(localStorage.getItem('project2026_income_v12')) || {}; Object.keys(saved).forEach(m => { if (document.getElementById(`salary-${m}`)) { document.getElementById(`salary-${m}`).value = saved[m].salary || ''; document.getElementById(`bonus-${m}`).value = saved[m].bonus || ''; } }); saveIncome(); }
-        function saveExpense() { const expData = {}; let totalExp = 0, count = 0; months.forEach(m => { const val = Number(document.getElementById(`exp-${m}`).value); if (val > 0) { expData[m] = val; totalExp += val; count++; } }); localStorage.setItem('project2026_expenses_v12', JSON.stringify(expData)); document.getElementById('totalExpense').innerText = totalExp.toLocaleString() + "원"; document.getElementById('avgExpense').innerText = (count > 0 ? Math.round(totalExp / count) : 0).toLocaleString() + "원"; }
-        function loadExpenseData() { const saved = JSON.parse(localStorage.getItem('project2026_expenses_v12')) || {}; Object.keys(saved).forEach(m => { const el = document.getElementById(`exp-${m}`); if (el) el.value = saved[m]; }); saveExpense(); }
-        function loadInvestmentData() { const data = JSON.parse(localStorage.getItem('project2026_data_v12')); const checks = JSON.parse(localStorage.getItem('project2026_checks_v12')) || {}; const memo = localStorage.getItem('project2026_memo_v12') || ""; if (data) { Object.keys(data).forEach(m => { Object.keys(data[m]).forEach(k => { const el = document.querySelector(`input[data-month="${m}"][data-key="${k}"]`); if (el) el.value = data[m][k]; }); }); } Object.keys(checks).forEach(m => { const chk = document.getElementById(`check-${m}`); if (chk && checks[m]) { chk.checked = true; document.getElementById(`card-${m}`).classList.add('done'); } }); document.getElementById('memoArea').value = memo; }
-        function toggleDone(month) { const chk = document.getElementById(`check-${month}`); const card = document.getElementById(`card-${month}`); if (chk.checked) card.classList.add('done'); else card.classList.remove('done'); const checks = JSON.parse(localStorage.getItem('project2026_checks_v12')) || {}; checks[month] = chk.checked; localStorage.setItem('project2026_checks_v12', JSON.stringify(checks)); calculateTotalAndChart(); selectMonth(month); }
-        function selectMonth(target) { months.forEach(m => { const btn = document.getElementById(`btn-${m}`); const isChecked = document.getElementById(`check-${m}`).checked; if (m === target) { btn.className = "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-blue-600 text-white transform scale-105 transition-all whitespace-nowrap"; document.getElementById(`card-${m}`).classList.remove('hidden'); document.getElementById(`income-${m}`).classList.remove('hidden'); } else { btn.className = isChecked ? "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-blue-200 bg-blue-50 text-blue-600 transition-all whitespace-nowrap" : "flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-all whitespace-nowrap"; document.getElementById(`card-${m}`).classList.add('hidden'); document.getElementById(`income-${m}`).classList.add('hidden'); } }); document.getElementById('current-month-display').innerText = target; }
-        document.getElementById('memoArea').addEventListener('input', function() { localStorage.setItem('project2026_memo_v12', this.value); });
+        function updateChart(d){const ctx=document.getElementById('portfolioChart').getContext('2d'),l=currentFieldConfig.map(f=>f.label),c=currentFieldConfig.map(f=>f.color),ds=currentFieldConfig.map(f=>d[f.key]);if(myChart){myChart.data.labels=l;myChart.data.datasets[0].data=ds;myChart.data.datasets[0].backgroundColor=c;myChart.update();}else{myChart=new Chart(ctx,{type:'doughnut',data:{labels:l,datasets:[{data:ds,backgroundColor:c,borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}}})}}
+        function updateGrowthChart(d){const ctx=document.getElementById('growthChart').getContext('2d');if(growthChart){growthChart.data.datasets[0].data=d;growthChart.update();}else{growthChart=new Chart(ctx,{type:'line',data:{labels:months,datasets:[{label:'누적 자산',data:d,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',borderWidth:2,tension:0.3,fill:true,pointBackgroundColor:'#2563eb'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{borderDash:[2,4]}},x:{display:false}}}})}}
+        function updateMainSavingsChart(proj){if(proj===undefined)return;const incStr=document.getElementById('totalIncomeDisplay').innerText,inc=parseInt(incStr.replace(/[^0-9]/g,""))||0,pWon=proj*10000;let r=0,exp=0;if(inc>0){r=Math.min((pWon/inc)*100,100).toFixed(1);exp=inc-pWon;if(exp<0)exp=0;}document.getElementById('mainSavingsText').innerText=r+"%";const ctx=document.getElementById('mainSavingsChart').getContext('2d');if(mainSavingsChart){mainSavingsChart.data.datasets[0].data=[pWon,exp];mainSavingsChart.update();}else{mainSavingsChart=new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[pWon,exp],backgroundColor:['#2563eb','#e5e7eb'],borderWidth:0,cutout:'75%'}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{enabled:false}}}})}}
+        function saveIncome(){const d={};months.forEach(m=>{const s=Number(document.getElementById(`salary-${m}`).value),b=Number(document.getElementById(`bonus-${m}`).value);d[m]={salary:s,bonus:b};});localStorage.setItem('project2026_income_v13',JSON.stringify(d));calculateTotalIncome();}
+        function calculateTotalIncome(){let t=0;months.forEach(m=>{t+=(Number(document.getElementById(`salary-${m}`).value)+Number(document.getElementById(`bonus-${m}`).value));});document.getElementById('totalIncomeDisplay').innerText=(t*10000).toLocaleString()+"원";updateMainSavingsChart();}
+        function saveExpense(){const d={};let t=0,c=0;months.forEach(m=>{const v=Number(document.getElementById(`exp-${m}`).value);if(v>0){d[m]=v;t+=v;c++;}});localStorage.setItem('project2026_expenses_v13',JSON.stringify(d));document.getElementById('totalExpense').innerText=t.toLocaleString()+"원";document.getElementById('avgExpense').innerText=(c>0?Math.round(t/c):0).toLocaleString()+"원";}
+        function loadIncomeData(){const s=JSON.parse(localStorage.getItem('project2026_income_v13'))||{};Object.keys(s).forEach(m=>{if(document.getElementById(`salary-${m}`)){document.getElementById(`salary-${m}`).value=s[m].salary||'';document.getElementById(`bonus-${m}`).value=s[m].bonus||'';}});saveIncome();}
+        function loadExpenseData(){const s=JSON.parse(localStorage.getItem('project2026_expenses_v13'))||{};Object.keys(s).forEach(m=>{const e=document.getElementById(`exp-${m}`);if(e)e.value=s[m];});saveExpense();}
+        function loadInvestmentData(){const d=JSON.parse(localStorage.getItem('project2026_data_v13')),c=JSON.parse(localStorage.getItem('project2026_checks_v13'))||{},mm=localStorage.getItem('project2026_memo_v13')||"";if(d){Object.keys(d).forEach(m=>{Object.keys(d[m]).forEach(k=>{const e=document.querySelector(`input[data-month="${m}"][data-key="${k}"]`);if(e)e.value=d[m][k];});});}Object.keys(c).forEach(m=>{const ch=document.getElementById(`check-${m}`);if(ch&&c[m]){ch.checked=true;document.getElementById(`card-${m}`).classList.add('done');}});document.getElementById('memoArea').value=mm;const tg=localStorage.getItem('project2026_target_goal');if(tg)document.getElementById('target-goal').value=tg;}
+        function toggleDone(m){const ch=document.getElementById(`check-${m}`),cd=document.getElementById(`card-${m}`);if(ch.checked)cd.classList.add('done');else cd.classList.remove('done');const c=JSON.parse(localStorage.getItem('project2026_checks_v13'))||{};c[m]=ch.checked;localStorage.setItem('project2026_checks_v13',JSON.stringify(c));calculateTotalAndChart();selectMonth(m);}
+        function selectMonth(t){months.forEach(m=>{const b=document.getElementById(`btn-${m}`),ch=document.getElementById(`check-${m}`).checked;if(m===t){b.className="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold shadow-md bg-blue-600 text-white transform scale-105 transition-all whitespace-nowrap";document.getElementById(`card-${m}`).classList.remove('hidden');document.getElementById(`income-${m}`).classList.remove('hidden');}else{b.className=ch?"flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200 transition-all whitespace-nowrap":"flex-shrink-0 px-4 py-2 rounded-lg text-sm font-bold border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all whitespace-nowrap";document.getElementById(`card-${m}`).classList.add('hidden');document.getElementById(`income-${m}`).classList.add('hidden');}});document.getElementById('current-month-display').innerText=t;}
+        document.getElementById('memoArea').addEventListener('input',function(){localStorage.setItem('project2026_memo_v13',this.value);});
 
-        // ==========================================
-        // [PAGE 2] 로직
-        // ==========================================
-        function initPreData() { const saved = localStorage.getItem('project2026_pre_v12'); if (saved) { preDataStore = JSON.parse(saved); } else { preMonths.forEach(m => { preDataStore[m] = { salary: 0, other: 0, manualTotalExp: 0, items: [] }; }); } }
-        function renderPreCards() { const container = document.getElementById('pre-container'); container.innerHTML = preMonths.map(month => `
-            <div class="card border border-gray-200 flex flex-col h-full" id="pre-card-${month}">
-                <h3 class="font-bold text-lg mb-3 text-indigo-700 pb-2 border-b flex justify-between">${month}<span class="text-xs text-gray-400 font-normal self-end">준비기간</span></h3>
-                <div class="mb-4 bg-indigo-50 p-2 rounded-lg"><label class="block text-xs font-bold text-gray-500 mb-1">📥 수입</label><div class="flex gap-2"><input type="number" placeholder="월급" id="pre-salary-${month}" onchange="updatePreData('${month}')" class="w-1/2 text-sm"><input type="number" placeholder="수당" id="pre-other-${month}" onchange="updatePreData('${month}')" class="w-1/2 text-sm"></div></div>
-                <div class="mb-2 flex justify-between items-center px-1"><span class="text-xs font-bold text-gray-500">목표 지출액(예산):</span><input type="number" id="pre-manual-exp-${month}" onchange="updatePreData('${month}')" class="w-20 border rounded p-1 text-right text-sm" placeholder="0"></div>
-                <div class="flex-1 overflow-y-auto mb-2 pr-1 custom-scroll" style="min-height: 120px; max-height: 200px;"><table class="w-full text-xs"><thead class="text-gray-400 border-b"><tr><th class="text-left pb-1">내역</th><th class="text-right pb-1">금액</th><th class="text-center pb-1">저축?</th><th></th></tr></thead><tbody id="pre-list-${month}"></tbody></table></div>
-                <button onclick="addPreRow('${month}')" class="w-full py-1.5 text-xs font-bold text-indigo-600 border border-indigo-200 rounded hover:bg-indigo-50 mb-4">+ 항목 추가</button>
-                <div class="pt-2 border-t space-y-1"><div class="flex justify-between items-center text-xs"><span class="text-gray-500">리스트 지출 합계:</span><span class="font-bold text-red-500" id="pre-sum-exp-${month}">0</span></div><div class="flex justify-between items-center text-sm"><span class="font-bold text-gray-600">리스트 저축 합계:</span><span class="font-bold text-blue-600" id="pre-sum-save-${month}">0</span></div></div>
-            </div>`).join(''); }
-        function updatePreCards() { preMonths.forEach(m => { const data = preDataStore[m] || { salary:0, other:0, manualTotalExp:0, items:[] }; document.getElementById(`pre-salary-${m}`).value = data.salary || ''; document.getElementById(`pre-other-${m}`).value = data.other || ''; document.getElementById(`pre-manual-exp-${m}`).value = data.manualTotalExp || ''; renderPreListRows(m); }); calcPreTotals(); }
-        function renderPreListRows(month) { const tbody = document.getElementById(`pre-list-${month}`); const items = preDataStore[month].items; tbody.innerHTML = items.map((item, index) => `<tr class="border-b border-gray-100 last:border-0"><td class="py-1"><input type="text" value="${item.name}" onchange="updatePreItem('${month}', ${index}, 'name', this.value)" class="w-full bg-transparent p-0 text-gray-700" placeholder="항목명"></td><td class="py-1"><input type="number" value="${item.amount}" onchange="updatePreItem('${month}', ${index}, 'amount', this.value)" class="w-14 bg-transparent p-0 text-right font-bold" placeholder="0"></td><td class="py-1 text-center"><input type="checkbox" ${item.isSaving ? 'checked' : ''} onchange="updatePreItem('${month}', ${index}, 'isSaving', this.checked)" class="w-3 h-3 text-blue-600 rounded"></td><td class="py-1 text-right"><button onclick="deletePreRow('${month}', ${index})" class="text-gray-300 hover:text-red-500">×</button></td></tr>`).join(''); }
-        function updatePreData(month) { if(!preDataStore[month]) preDataStore[month] = { items: [] }; preDataStore[month].salary = Number(document.getElementById(`pre-salary-${month}`).value); preDataStore[month].other = Number(document.getElementById(`pre-other-${month}`).value); preDataStore[month].manualTotalExp = Number(document.getElementById(`pre-manual-exp-${month}`).value); savePreStore(); calcPreTotals(); }
-        function addPreRow(month) { if(!preDataStore[month]) preDataStore[month] = { items: [] }; preDataStore[month].items.push({ name: "", amount: 0, isSaving: false }); savePreStore(); renderPreListRows(month); calcPreTotals(); }
-        function deletePreRow(month, index) { preDataStore[month].items.splice(index, 1); savePreStore(); renderPreListRows(month); calcPreTotals(); }
-        function updatePreItem(month, index, field, value) { if(field === 'amount') value = Number(value); preDataStore[month].items[index][field] = value; savePreStore(); calcPreTotals(); }
-        function calcPreTotals() { let totalPeriodSaving = 0; let totalPeriodIncome = 0; preMonths.forEach(m => { const data = preDataStore[m]; const items = data.items; let sumExp = 0, sumSave = 0; totalPeriodIncome += (data.salary || 0) + (data.other || 0); items.forEach(item => { if (item.isSaving) sumSave += item.amount; else sumExp += item.amount; }); document.getElementById(`pre-sum-exp-${m}`).innerText = sumExp.toLocaleString(); document.getElementById(`pre-sum-save-${m}`).innerText = sumSave.toLocaleString() + "만"; totalPeriodSaving += sumSave; }); document.getElementById('pre-total-save-sum').innerText = (totalPeriodSaving * 10000).toLocaleString() + "원"; document.getElementById('pre-total-income-sum').innerText = (totalPeriodIncome * 10000).toLocaleString() + "원"; updatePreSavingsChart(totalPeriodIncome, totalPeriodSaving); }
-        function updatePreSavingsChart(totalIncome, totalSaving) { let rate = 0; let expense = 0; if (totalIncome > 0) { rate = Math.min((totalSaving / totalIncome) * 100, 100).toFixed(1); expense = totalIncome - totalSaving; if(expense < 0) expense = 0; } document.getElementById('preSavingsText').innerText = rate + "%"; const ctx = document.getElementById('preSavingsChart').getContext('2d'); if (preSavingsChart) { preSavingsChart.data.datasets[0].data = [totalSaving, expense]; preSavingsChart.update(); } else { preSavingsChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['저축', '지출/기타'], datasets: [{ data: [totalSaving, expense], backgroundColor: ['#4f46e5', '#e5e7eb'], borderWidth: 0, cutout: '75%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } } }); } }
-        function savePreStore() { localStorage.setItem('project2026_pre_v12', JSON.stringify(preDataStore)); }
+        // --- PAGE 2 ---
+        function initPreData(){const s=localStorage.getItem('project2026_pre_v13');if(s)preDataStore=JSON.parse(s);else preMonths.forEach(m=>{preDataStore[m]={salary:0,other:0,manualTotalExp:0,items:[]};});
+            const pt = localStorage.getItem('project2026_pre_target');
+            if(pt) document.getElementById('pre-target-goal').value = pt;
+            const pd = localStorage.getItem('project2026_pre_target_date');
+            if(pd) document.getElementById('pre-target-deadline').value = pd;
+        }
+        function renderPreCards(){document.getElementById('pre-container').innerHTML=preMonths.map(m=>`<div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col h-full" id="pre-card-${m}"><h3 class="font-bold text-lg mb-3 text-indigo-700 dark:text-indigo-300 pb-2 border-b dark:border-gray-700 flex justify-between">${m}<span class="text-xs text-gray-400 font-normal self-end">준비기간</span></h3><div class="mb-4 bg-indigo-50 dark:bg-gray-700 p-2 rounded-lg"><label class="block text-xs font-bold text-gray-500 dark:text-gray-300 mb-1">📥 수입</label><div class="flex gap-2"><input type="number" placeholder="월급" id="pre-salary-${m}" onchange="updatePreData('${m}')" class="w-1/2 text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"><input type="number" placeholder="수당" id="pre-other-${m}" onchange="updatePreData('${m}')" class="w-1/2 text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"></div></div><div class="mb-2 flex justify-between items-center px-1"><span class="text-xs font-bold text-gray-500 dark:text-gray-400">목표 지출액:</span><input type="number" id="pre-manual-exp-${m}" onchange="updatePreData('${m}')" class="w-20 border rounded p-1 text-right text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="0"></div><div class="flex-1 overflow-y-auto mb-2 pr-1 custom-scroll" style="min-height: 120px; max-height: 200px;"><table class="w-full text-xs"><thead class="text-gray-400 border-b dark:border-gray-700"><tr><th class="text-left pb-1">내역</th><th class="text-right pb-1">금액</th><th class="text-center pb-1">저축?</th><th></th></tr></thead><tbody id="pre-list-${m}" class="dark:text-gray-200"></tbody></table></div><button onclick="addPreRow('${m}')" class="w-full py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-gray-600 rounded hover:bg-indigo-50 dark:hover:bg-gray-700 mb-4">+ 항목 추가</button><div class="pt-2 border-t dark:border-gray-700 space-y-1"><div class="flex justify-between items-center text-xs"><span class="text-gray-500 dark:text-gray-400">리스트 지출 합계:</span><span class="font-bold text-red-500 dark:text-red-400" id="pre-sum-exp-${m}">0</span></div><div class="flex justify-between items-center text-sm"><span class="font-bold text-gray-600 dark:text-gray-300">리스트 저축 합계:</span><span class="font-bold text-blue-600 dark:text-blue-400" id="pre-sum-save-${m}">0</span></div></div></div>`).join('');}
+        function updatePreCards(){preMonths.forEach(m=>{const d=preDataStore[m]||{salary:0,other:0,manualTotalExp:0,items:[]};document.getElementById(`pre-salary-${m}`).value=d.salary||'';document.getElementById(`pre-other-${m}`).value=d.other||'';document.getElementById(`pre-manual-exp-${m}`).value=d.manualTotalExp||'';renderPreListRows(m);});calcPreTotals();}
+        function renderPreListRows(m){document.getElementById(`pre-list-${m}`).innerHTML=preDataStore[m].items.map((it,i)=>`<tr class="border-b border-gray-100 dark:border-gray-700 last:border-0"><td class="py-1"><input type="text" value="${it.name}" onchange="updatePreItem('${m}',${i},'name',this.value)" class="w-full bg-transparent p-0 text-gray-700 dark:text-gray-300" placeholder="항목명"></td><td class="py-1"><input type="number" value="${it.amount}" onchange="updatePreItem('${m}',${i},'amount',this.value)" class="w-14 bg-transparent p-0 text-right font-bold dark:text-gray-200" placeholder="0"></td><td class="py-1 text-center"><input type="checkbox" ${it.isSaving?'checked':''} onchange="updatePreItem('${m}',${i},'isSaving',this.checked)" class="w-3 h-3 text-blue-600 rounded"></td><td class="py-1 text-right"><button onclick="deletePreRow('${m}',${i})" class="text-gray-300 hover:text-red-500">×</button></td></tr>`).join('');}
+        function updatePreData(m){if(!preDataStore[m])preDataStore[m]={items:[]};preDataStore[m].salary=Number(document.getElementById(`pre-salary-${m}`).value);preDataStore[m].other=Number(document.getElementById(`pre-other-${m}`).value);preDataStore[m].manualTotalExp=Number(document.getElementById(`pre-manual-exp-${m}`).value);savePreStore();calcPreTotals();}
+        function addPreRow(m){if(!preDataStore[m])preDataStore[m]={items:[]};preDataStore[m].items.push({name:"",amount:0,isSaving:false});savePreStore();renderPreListRows(m);calcPreTotals();}
+        function deletePreRow(m,i){preDataStore[m].items.splice(i,1);savePreStore();renderPreListRows(m);calcPreTotals();}
+        function updatePreItem(m,i,f,v){if(f==='amount')v=Number(v);preDataStore[m].items[i][f]=v;savePreStore();calcPreTotals();}
+        
+        function calcPreTotals(){
+            let ts=0,ti=0,te=0;
+            const pt = Number(document.getElementById('pre-target-goal').value) || 500;
+            localStorage.setItem('project2026_pre_target', pt);
+            
+            const pd = document.getElementById('pre-target-deadline').value;
+            if(pd) localStorage.setItem('project2026_pre_target_date', pd);
+
+            const dDayEl = document.getElementById('pre-d-day-badge');
+            if(pd) {
+                const today = new Date(); today.setHours(0,0,0,0);
+                const tDate = new Date(pd + "-01");
+                const diff = Math.ceil((tDate - today) / (1000 * 60 * 60 * 24));
+                dDayEl.innerText = diff > 0 ? `D-${diff}` : (diff === 0 ? "D-Day" : `D+${Math.abs(diff)}`);
+                dDayEl.classList.remove('hidden');
+            } else { dDayEl.classList.add('hidden'); }
+
+            preMonths.forEach(m=>{
+                const d=preDataStore[m]; let se=0,ss=0; ti+=(d.salary||0)+(d.other||0); 
+                d.items.forEach(it=>{if(it.isSaving)ss+=it.amount;else se+=it.amount;}); 
+                document.getElementById(`pre-sum-exp-${m}`).innerText=se.toLocaleString();
+                document.getElementById(`pre-sum-save-${m}`).innerText=ss.toLocaleString()+"만";
+                ts+=ss; te+=se;
+            });
+            document.getElementById('pre-total-save-sum').innerText=(ts*10000).toLocaleString()+"원";
+            document.getElementById('pre-total-income-sum').innerText=(ti*10000).toLocaleString()+"원";
+            document.getElementById('pre-total-exp-sum').innerText=(te*10000).toLocaleString()+"원";
+            updatePreSavingsChart(ti,ts);
+            
+            const pct = Math.min((ts/pt)*100, 100).toFixed(1);
+            document.getElementById('pre-progress-bar').style.width=pct+"%";
+            document.getElementById('pre-progress-text').innerText=pct+"%";
+
+            renderMilestones(pt, 'pre-milestones-container', ts);
+            checkMilestoneReached(ts, 'pre', pt);
+
+            const remaining = (pt - ts)*10000;
+            const speed = (preMonths.length > 0) ? (ts / 4) * 10000 : 0; 
+            const predEl = document.getElementById('pre-prediction-date');
+            const diffEl = document.getElementById('pre-prediction-diff');
+
+            if(remaining <= 0) { predEl.innerText = "달성 완료!"; predEl.className="font-bold text-green-500"; diffEl.innerText=""; }
+            else if(speed <= 0) { predEl.innerText = "데이터 부족"; predEl.className="font-bold text-gray-400"; diffEl.innerText=""; }
+            else {
+                const startDate = new Date(2025, 11, 1); 
+                const monthsNeeded = Math.ceil(remaining / speed);
+                const predDate = new Date(startDate);
+                predDate.setMonth(startDate.getMonth() + monthsNeeded);
+                predEl.innerText = `${predDate.getFullYear()}년 ${predDate.getMonth()+1}월`;
+                predEl.className="font-bold text-indigo-600 dark:text-white";
+
+                if(pd) {
+                    const targetD = new Date(pd);
+                    const diffMonths = (targetD.getFullYear() - predDate.getFullYear()) * 12 + (targetD.getMonth() - predDate.getMonth());
+                    if(diffMonths > 0) { diffEl.innerText = `(+${diffMonths}개월 단축)`; diffEl.className="text-xs text-green-500 font-bold"; }
+                    else if(diffMonths < 0) { diffEl.innerText = `(${diffMonths}개월 지연)`; diffEl.className="text-xs text-red-500 font-bold"; }
+                    else { diffEl.innerText = "(딱 맞음)"; diffEl.className="text-xs text-blue-500 font-bold"; }
+                } else { diffEl.innerText = ""; }
+            }
+        }
+        
+        function updatePreSavingsChart(inc,sav){let r=0,exp=0;if(inc>0){r=Math.min((sav/inc)*100,100).toFixed(1);exp=inc-sav;if(exp<0)exp=0;}document.getElementById('preSavingsText').innerText=r+"%";const ctx=document.getElementById('preSavingsChart').getContext('2d');if(preSavingsChart){preSavingsChart.data.datasets[0].data=[sav,exp];preSavingsChart.update();}else{preSavingsChart=new Chart(ctx,{type:'doughnut',data:{labels:['저축','지출'],datasets:[{data:[sav,exp],backgroundColor:['#4f46e5','#e5e7eb'],borderWidth:0,cutout:'75%'}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{enabled:false}}}})}}
+        function savePreStore(){localStorage.setItem('project2026_pre_v13',JSON.stringify(preDataStore));}
+
+        // --- PAGE 3 ---
+        function initJournal(){const s=localStorage.getItem('project2026_journal_v14');journalData=s?JSON.parse(s):[];document.getElementById('j-date').valueAsDate=new Date();renderJournalList();}
+        function addJournal(){const d=document.getElementById('j-date').value,n=document.getElementById('j-name').value;if(!d||!n)return alert("날짜/종목명 필수");journalData.push({id:Date.now(),date:d,name:n,type:document.getElementById('j-type').value,qty:document.getElementById('j-qty').value,price:document.getElementById('j-price').value,note:document.getElementById('j-note').value});journalData.sort((a,b)=>new Date(b.date)-new Date(a.date));localStorage.setItem('project2026_journal_v14',JSON.stringify(journalData));renderJournalList();document.getElementById('j-name').value="";document.getElementById('j-note').value="";}
+        function deleteJournal(id){if(!confirm("삭제?"))return;journalData=journalData.filter(i=>i.id!==id);localStorage.setItem('project2026_journal_v14',JSON.stringify(journalData));renderJournalList();}
+        function renderJournalList(){const b=document.getElementById('journal-list'),e=document.getElementById('empty-msg');if(journalData.length===0){b.innerHTML="";e.classList.remove('hidden');return;}e.classList.add('hidden');b.innerHTML=journalData.map(i=>{let t="";if(i.type==='buy')t=`<span class="bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 px-2 py-0.5 rounded text-xs font-bold">매수</span>`;else if(i.type==='sell')t=`<span class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-bold">매도</span>`;else t=`<span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded text-xs font-bold">관망</span>`;return `<tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"><td class="p-2 align-top text-xs text-gray-500 dark:text-gray-400"><div>${i.date}</div><div class="font-bold text-gray-700 dark:text-gray-200">${i.name}</div></td><td class="p-2 align-top">${t}</td><td class="p-2 align-top text-right text-xs"><div class="dark:text-gray-200">${Number(i.price).toLocaleString()}원</div><div class="text-gray-400">${i.qty}주</div></td><td class="p-2 align-top text-xs text-gray-600 dark:text-gray-300 whitespace-pre-wrap">${i.note}</td><td class="p-2 align-top text-center"><button onclick="deleteJournal(${i.id})" class="text-gray-300 hover:text-red-500 font-bold">×</button></td></tr>`;}).join('');}
+        
+        // --- PAGE 3: Portfolio ---
+        function initPortfolio(){const s=localStorage.getItem('project2026_portfolio_v18_1');portfolioData=s?JSON.parse(s):[];renderPortfolio();}
+        function addPortfolioItem(){const name=document.getElementById('pf-name').value,avg=document.getElementById('pf-avg').value,qty=document.getElementById('pf-qty').value,dps=document.getElementById('pf-dps').value;if(!name||!avg||!qty)return alert("모두 입력");portfolioData.push({id:Date.now(),name,avg:Number(avg),qty:Number(qty),current:Number(avg),dps:Number(dps)||0});savePortfolio();renderPortfolio();document.getElementById('pf-name').value="";document.getElementById('pf-avg').value="";document.getElementById('pf-qty').value="";document.getElementById('pf-dps').value="";}
+        function deletePortfolioItem(id){if(!confirm("삭제?"))return;portfolioData=portfolioData.filter(i=>i.id!==id);savePortfolio();renderPortfolio();}
+        function updateItem(id,field,value){const item=portfolioData.find(i=>i.id===id);if(item){item[field]=Number(value);savePortfolio();renderPortfolio();}}
+        
+        function sortPortfolio(key) {
+            if(currentSort.key === key) currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            else { currentSort.key = key; currentSort.order = 'desc'; }
+            ['name','val','profit','div'].forEach(k => document.getElementById(`sort-${k}`).innerText = "");
+            document.getElementById(`sort-${key}`).innerText = currentSort.order === 'asc' ? "▲" : "▼";
+            portfolioData.sort((a,b) => {
+                let va, vb;
+                if(key === 'name') { va=a.name; vb=b.name; }
+                else if(key === 'val') { va=a.current*a.qty; vb=b.current*b.qty; }
+                else if(key === 'profit') { va=(a.current-a.avg)*a.qty; vb=(b.current-b.avg)*b.qty; }
+                else if(key === 'div') { va=a.dps*a.qty; vb=b.dps*b.qty; }
+                if(va < vb) return currentSort.order === 'asc' ? -1 : 1;
+                if(va > vb) return currentSort.order === 'asc' ? 1 : -1;
+                return 0;
+            });
+            renderPortfolio();
+        }
+
+        function renderPortfolio(){
+            const tbody=document.getElementById('portfolio-list');let tv=0,tp=0,ti=0,td=0;
+            const chartLabels = [], chartData = [];
+            tbody.innerHTML=portfolioData.map(item=>{
+                const inv=item.avg*item.qty,val=item.current*item.qty,prof=val-inv,rate=inv>0?(prof/inv)*100:0;
+                const divSum=item.dps*item.qty, divRate=item.current>0?(item.dps/item.current)*100:0;
+                ti+=inv;tv+=val;tp+=prof;td+=divSum;
+                chartLabels.push(item.name); chartData.push(val);
+                const c=prof>0?"text-up bg-up-light":(prof<0?"text-down bg-down-light":"");
+                const searchLink=`https://search.naver.com/search.naver?query=주가+${encodeURIComponent(item.name)}`;
+                return `<tr class="border-b dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700"><td class="p-2 font-bold text-gray-700 dark:text-gray-200">${item.name}<a href="${searchLink}" target="_blank" class="ml-1 text-xs bg-green-500 text-white px-1.5 py-0.5 rounded hover:bg-green-600 no-underline font-normal">N</a></td><td class="p-2 text-right text-xs text-gray-500 dark:text-gray-400"><div>${item.avg.toLocaleString()}</div><div>x ${item.qty}</div></td><td class="p-2 text-right"><input type="number" value="${item.current}" onchange="updateItem(${item.id},'current',this.value)" class="w-20 text-right p-1 border rounded text-sm font-bold bg-white dark:bg-gray-600 dark:border-gray-500 dark:text-white focus:bg-yellow-50 dark:focus:bg-gray-500"></td><td class="p-2 text-right"><input type="number" value="${item.dps}" onchange="updateItem(${item.id},'dps',this.value)" class="w-16 text-right p-1 border rounded text-xs bg-gray-50 dark:bg-gray-700 dark:text-gray-200 focus:bg-white"></td><td class="p-2 text-right font-medium dark:text-gray-200 text-xs">${val.toLocaleString()}</td><td class="p-2 text-right font-bold text-xs ${c}"><div>${prof>0?"+"+prof.toLocaleString():prof.toLocaleString()}</div><div>(${rate>0?"+"+rate.toFixed(1):rate.toFixed(1)}%)</div></td><td class="p-2 text-right text-xs text-gray-600 dark:text-gray-400"><div>${divSum.toLocaleString()}</div><div class="text-[10px]">(${divRate.toFixed(1)}%)</div></td><td class="p-2 text-center"><button onclick="deletePortfolioItem(${item.id})" class="text-gray-300 hover:text-red-500 font-bold">×</button></td></tr>`;
+            }).join('');
+            const tr=ti>0?(tp/ti)*100:0,tc=tp>0?"text-up":(tp<0?"text-down":"");
+            document.getElementById('pf-total-val').innerText=tv.toLocaleString()+"원";
+            document.getElementById('pf-total-rate').innerHTML=`<span class="${tc}">${tr>0?"+":""}${tr.toFixed(1)}%</span>`;
+            document.getElementById('pf-total-profit').innerHTML=`<span class="${tc}">${tp>0?"+":""}${tp.toLocaleString()}원</span>`;
+            document.getElementById('pf-total-div').innerText=td.toLocaleString()+"원";
+            updateStockPieChart(chartLabels, chartData);
+            const totalStockVal = Math.round(tv / 10000); 
+            const seedStockInput = document.getElementById('seed-stock');
+            if(seedStockInput) seedStockInput.value = totalStockVal;
+            saveSeedData(); 
+        }
+
+        function updateStockPieChart(labels, data) {
+            const ctx = document.getElementById('stockPieChart').getContext('2d');
+            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#84cc16'];
+            if (stockPieChart) { stockPieChart.data.labels = labels; stockPieChart.data.datasets[0].data = data; stockPieChart.update(); } else { stockPieChart = new Chart(ctx, { type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } }); }
+        }
+
+        function savePortfolio(){ localStorage.setItem('project2026_portfolio_v18_1',JSON.stringify(portfolioData)); }
     </script>
 </body>
 </html>
