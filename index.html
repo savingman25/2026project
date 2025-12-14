@@ -180,7 +180,7 @@
 
             <!-- 상세 분석 화면 -->
             <div id="yearly-detail-view" class="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 text-center border dark:border-gray-600">
-                <h4 class="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-2" id="yd-title">2026 (1년차) 목표</h4>
+                <h4 class="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-2" id="yd-title">2026 (2년차) 목표</h4>
                 <div class="flex flex-col items-center justify-center gap-4 mb-6">
                     <div class="flex items-center gap-2 justify-center">
                         <span class="text-gray-500 dark:text-gray-300 text-sm">목표 금액:</span>
@@ -221,12 +221,12 @@
         
         // 연도 데이터 (수정됨)
         const roadmapData = [
-            { year: 2025, label: "2025 (준비)" },
-            { year: 2026, label: "2026 (1년차)" },
-            { year: 2027, label: "2027 (2년차)" },
-            { year: 2028, label: "2028 (3년차)" },
-            { year: 2029, label: "2029 (4년차)" },
-            { year: 2030, label: "2030 (5년차)" }
+            { year: 2025, label: "2025 (1년차)" },
+            { year: 2026, label: "2026 (2년차)" },
+            { year: 2027, label: "2027 (3년차)" },
+            { year: 2028, label: "2028 (4년차)" },
+            { year: 2029, label: "2029 (5년차)" },
+            { year: 2030, label: "2030 (6년차)" }
         ];
         let selectedYear = 2026;
         let futureGoals = {}; // 4쪽 전용 데이터
@@ -428,9 +428,9 @@
         function updateLevelBadge(currentAsset) {
             const badge = document.getElementById('level-badge'); const nextGap = document.getElementById('next-level-gap');
             let level="🌱 씨앗", nextLevel=1000, colorClass="bg-green-100 text-green-800";
-            if(currentAsset >= 5000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
-            else if(currentAsset >= 10000) { level="💎 다이아몬드"; nextLevel=30000; colorClass="bg-blue-100 text-blue-800"; }
-            else if(currentAsset >= 7000) { level="🥇 골드"; nextLevel=10000; colorClass="bg-yellow-100 text-yellow-800"; }
+            if(currentAsset >= 30000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
+            else if(currentAsset >= 14000) { level="💎 다이아몬드"; nextLevel=30000; colorClass="bg-blue-100 text-blue-800"; }
+            else if(currentAsset >= 7000) { level="🥇 골드"; nextLevel=14000; colorClass="bg-yellow-100 text-yellow-800"; }
             else if(currentAsset >= 3000) { level="🥈 실버"; nextLevel=7000; colorClass="bg-gray-200 text-gray-800"; }
             else if(currentAsset >= 1000) { level="🥉 브론즈"; nextLevel=3000; colorClass="bg-orange-100 text-orange-800"; }
             badge.innerText = level; badge.className = `px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border border-white/30 ${colorClass}`;
