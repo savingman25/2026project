@@ -427,12 +427,12 @@
         }
         function updateLevelBadge(currentAsset) {
             const badge = document.getElementById('level-badge'); const nextGap = document.getElementById('next-level-gap');
-            let level="🌱 씨앗", nextLevel=500, colorClass="bg-green-100 text-green-800";
+            let level="🌱 씨앗", nextLevel=1000, colorClass="bg-green-100 text-green-800";
             if(currentAsset >= 5000) { level="👑 마스터"; nextLevel=0; colorClass="bg-purple-100 text-purple-800"; }
-            else if(currentAsset >= 3000) { level="💎 다이아몬드"; nextLevel=5000; colorClass="bg-blue-100 text-blue-800"; }
-            else if(currentAsset >= 2000) { level="🥇 골드"; nextLevel=3000; colorClass="bg-yellow-100 text-yellow-800"; }
-            else if(currentAsset >= 1000) { level="🥈 실버"; nextLevel=2000; colorClass="bg-gray-200 text-gray-800"; }
-            else if(currentAsset >= 500) { level="🥉 브론즈"; nextLevel=1000; colorClass="bg-orange-100 text-orange-800"; }
+            else if(currentAsset >= 10000) { level="💎 다이아몬드"; nextLevel=30000; colorClass="bg-blue-100 text-blue-800"; }
+            else if(currentAsset >= 7000) { level="🥇 골드"; nextLevel=10000; colorClass="bg-yellow-100 text-yellow-800"; }
+            else if(currentAsset >= 3000) { level="🥈 실버"; nextLevel=7000; colorClass="bg-gray-200 text-gray-800"; }
+            else if(currentAsset >= 1000) { level="🥉 브론즈"; nextLevel=3000; colorClass="bg-orange-100 text-orange-800"; }
             badge.innerText = level; badge.className = `px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm border border-white/30 ${colorClass}`;
             const prevLevel = localStorage.getItem('project2026_level');
             if(prevLevel && prevLevel !== level) { badge.classList.add('level-up-anim'); triggerConfetti(); setTimeout(()=>badge.classList.remove('level-up-anim'), 1000); }
